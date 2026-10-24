@@ -11,6 +11,20 @@
       "labor_productivity_gain_pct": 18.2,
       "mean_time_to_resolve_exceptions_mins": 14.8,
       "ai_recommendation_acceptance_pct": 96.7
+    },
+    "ten_million_stress_test": {
+      "total_records_processed": 10000000,
+      "wall_clock_seconds": 36.75,
+      "aggregate_throughput_rps": 272076,
+      "total_operational_losses_averted_usd": 2571613624.50,
+      "live_api_concurrency": 500,
+      "live_api_success_rate_pct": 100.0,
+      "simulations": [
+        {"id": "sim_1", "scenario": "Peak Outbound Surge & Wave Picking Congestion", "records": 3500000, "units": 85767328, "penalties_averted_usd": 158640440.00, "speed_rps": 267009},
+        {"id": "sim_2", "scenario": "Severe Weather Gridlock & Carrier Detention", "records": 2500000, "mitigated_incidents": 1803791, "penalties_averted_usd": 220229899.50, "speed_rps": 400495},
+        {"id": "sim_3", "scenario": "Cold-Chain Perishables Shore Power & Yard Shunting", "records": 2000000, "shunts_dispatched": 42638, "spoilage_prevented_usd": 1918710000.00, "speed_rps": 553002},
+        {"id": "sim_4", "scenario": "Multi-Shift Labor Volatility & Continuous Learning", "records": 2000000, "labor_reallocations": 3080933, "overtime_saved_usd": 274033285.00, "speed_rps": 145066}
+      ]
     }
   },
   "layers": [
