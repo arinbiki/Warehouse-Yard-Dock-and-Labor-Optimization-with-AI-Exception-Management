@@ -213,20 +213,20 @@ All 14 workflows are stored in [`workflows/`](file:///D:/web%20project/n8n/Wareh
 
 ## 5. Dify Cognitive AI Workflows (Layer 4)
 
-All 10 Dify workflow DSLs are stored in [`dify_workflows/`](file:///D:/web%20project/n8n/Warehouse,%20Yard,%20Dock,%20and%20Labor%20Optimization%20with%20AI%20Exception%20Management/dify_workflows/):
+All 10 Dify workflow DSLs are stored in [`dify_workflows/`](file:///D:/web%20project/n8n/Warehouse,%20Yard,%20Dock,%20and%20Labor%20Optimization%20with%20AI%20Exception%20Management/dify_workflows/) and deployed/published directly to the Dify Web Console (`http://158.69.215.232:3000/apps`) via Browser Skill automation:
 
-| Workflow | File Name | Operational Purpose |
-| :--- | :--- | :--- |
-| **01** | `01_supervisor_assistant.yml` | Natural language supervisor assistant for live congestion & labor queries |
-| **02** | `02_exception_summarization.yml` | Concise exception summaries with root cause, financial risk, & next steps |
-| **03** | `03_root_cause_explainer.yml` | Translates numerical hypothesis confidence scores into operational root causes |
-| **04** | `04_incident_report_generator.yml` | Generates audit-compliant facility incident reports with timelines & SOP checklists |
-| **05** | `05_shift_planning_recommendations.yml` | Synthesizes workload forecasts, skill gaps, & fatigue constraints for supervisors |
-| **06** | `06_delay_note_parsing.yml` | Extracts structured delay category, trailer, ETA, & severity from notes |
-| **07** | `07_sop_retrieval_guidance.yml` | Retrieves emergency SOP protocols (dock leveler lockouts, reefer shore power) |
-| **08** | `08_appointment_request_extraction.yml` | Structured extraction of booking details from unstructured carrier emails |
-| **09** | `09_carrier_communication_generator.yml` | Drafts professional appointment confirmations, reschedule notices, & detention warnings |
-| **10** | `10_operational_qa_wms.yml` | Direct conversational data analytics over historical warehouse productivity |
+| Workflow | File Name | Deployed Dify App ID | Live Web Console URL | Operational Purpose |
+| :--- | :--- | :--- | :--- | :--- |
+| **01** | `01_supervisor_assistant.yml` | `75623b98-1189-4e9d-bf89-8cfb5130144d` | [Console](http://158.69.215.232:3000/app/75623b98-1189-4e9d-bf89-8cfb5130144d/workflow) | Natural language supervisor assistant for live congestion & labor queries |
+| **02** | `02_exception_summarization.yml` | `eaa6e343-2298-45c1-9a2a-be61b60ede05` | [Console](http://158.69.215.232:3000/app/eaa6e343-2298-45c1-9a2a-be61b60ede05/workflow) | Concise exception summaries with root cause, financial risk, & next steps |
+| **03** | `03_root_cause_explainer.yml` | `7e830bbe-5ff5-420f-914e-9637774577f7` | [Console](http://158.69.215.232:3000/app/7e830bbe-5ff5-420f-914e-9637774577f7/workflow) | Translates numerical hypothesis confidence scores into operational root causes |
+| **04** | `04_incident_report_generator.yml` | `3b98612d-6459-4c0c-b35d-773d3267b57c` | [Console](http://158.69.215.232:3000/app/3b98612d-6459-4c0c-b35d-773d3267b57c/workflow) | Generates audit-compliant facility incident reports with timelines & SOP checklists |
+| **05** | `05_shift_planning_recommendations.yml` | `a01dc246-c974-47ac-96b8-fcf354a48bab` | [Console](http://158.69.215.232:3000/app/a01dc246-c974-47ac-96b8-fcf354a48bab/workflow) | Synthesizes workload forecasts, skill gaps, & fatigue constraints for supervisors |
+| **06** | `06_delay_note_parsing.yml` | `9b27f56c-5365-49a4-9915-12832165fd38` | [Console](http://158.69.215.232:3000/app/9b27f56c-5365-49a4-9915-12832165fd38/workflow) | Extracts structured delay category, trailer, ETA, & severity from notes |
+| **07** | `07_sop_retrieval_guidance.yml` | `911007c3-3472-47d0-b87c-a37d7815916f` | [Console](http://158.69.215.232:3000/app/911007c3-3472-47d0-b87c-a37d7815916f/workflow) | Retrieves emergency SOP protocols (dock leveler lockouts, reefer shore power) |
+| **08** | `08_appointment_request_extraction.yml` | `313d35aa-ad72-4887-b11d-88eccd8ba7a6` | [Console](http://158.69.215.232:3000/app/313d35aa-ad72-4887-b11d-88eccd8ba7a6/workflow) | Structured extraction of booking details from unstructured carrier emails |
+| **09** | `09_carrier_communication_generator.yml` | `d9872c62-9fd0-4f8a-89e7-fb5982f9a3f5` | [Console](http://158.69.215.232:3000/app/d9872c62-9fd0-4f8a-89e7-fb5982f9a3f5/workflow) | Drafts professional appointment confirmations, reschedule notices, & detention warnings |
+| **10** | `10_operational_qa_wms.yml` | `9bed5c9b-9249-45de-a959-4254df2a82ab` | [Console](http://158.69.215.232:3000/app/9bed5c9b-9249-45de-a959-4254df2a82ab/workflow) | Direct conversational data analytics over historical warehouse productivity |
 
 ---
 
@@ -371,6 +371,20 @@ All 14 production workflows are verified deployed, active, and benchmarked on `h
 13. `13 - Operational Dashboard Updates` (`rkntrESqR0TJg3Ov`) -> `POST /webhook/dashboard-update`
 14. `14 - Settlement & Feedback Loop` (`mOXV5Ic2UhogwFsk`) -> `POST /webhook/feedback-learning`
 
+### Verified Live Dify Cognitive Workflows
+
+All 10 cognitive workflows are imported, published, and verified active in the Dify workspace console (`http://158.69.215.232:3000/apps`):
+1. `01 - Warehouse Supervisor Assistant` (`75623b98-1189-4e9d-bf89-8cfb5130144d`)
+2. `02 - Exception Summarization` (`eaa6e343-2298-45c1-9a2a-be61b60ede05`)
+3. `03 - Root-Cause Explanation Generator` (`7e830bbe-5ff5-420f-914e-9637774577f7`)
+4. `04 - Incident Report Generator` (`3b98612d-6459-4c0c-b35d-773d3267b57c`)
+5. `05 - Shift Planning Recommendation Generator` (`a01dc246-c974-47ac-96b8-fcf354a48bab`)
+6. `06 - Delay Note Parsing` (`9b27f56c-5365-49a4-9915-12832165fd38`)
+7. `07 - SOP Retrieval and Resolution Guidance` (`911007c3-3472-47d0-b87c-a37d7815916f`)
+8. `08 - Appointment Request Extraction` (`313d35aa-ad72-4887-b11d-88eccd8ba7a6`)
+9. `09 - Carrier Communication Generator` (`d9872c62-9fd0-4f8a-89e7-fb5982f9a3f5`)
+10. `10 - Operational Q&A over WMS Data` (`9bed5c9b-9249-45de-a959-4254df2a82ab`)
+
 ---
 
 ## Repository Structure
@@ -431,11 +445,14 @@ All 14 production workflows are verified deployed, active, and benchmarked on `h
 │   ├── 12_real_time_alerts_and_notifications.json
 │   ├── 13_operational_dashboard_updates.json
 │   └── 14_settlement_and_feedback_loop.json
+├── dify_endpoints.json                   # Verified active Dify workflow app IDs & URLs
 ├── n8n_endpoints.json                    # Active deployment registry of 14 live webhooks
 ├── docs/
 │   ├── index.html                        # Interactive Architecture Console & Scenario Player
 │   └── warehouse_architecture.json       # Interactive blueprint specification
 ├── scripts/
+│   ├── deploy_all_dify_workflows.py      # Automated browser skill deployment to Dify
+│   ├── verify_dify_apps.py               # Live verification & endpoint dump for Dify apps
 │   └── deploy_all_n8n_workflows.py       # Automated deployment & activation to live n8n
 └── tests/
     ├── seed_warehouse_data.py            # Master database populator
