@@ -2,52 +2,72 @@
   "03 - Root-Cause Explanation Generator": {
     "id": "7e830bbe-5ff5-420f-914e-9637774577f7",
     "mode": "workflow",
-    "console_url": "http://158.69.215.232:3000/app/7e830bbe-5ff5-420f-914e-9637774577f7/workflow"
+    "console_url": "http://158.69.215.232:3000/app/7e830bbe-5ff5-420f-914e-9637774577f7/workflow",
+    "api_key": "app-jhHTFnolCn1JOZhJgE4Ed9nB",
+    "status": "published"
   },
   "08 - Appointment Request Extraction": {
     "id": "313d35aa-ad72-4887-b11d-88eccd8ba7a6",
     "mode": "workflow",
-    "console_url": "http://158.69.215.232:3000/app/313d35aa-ad72-4887-b11d-88eccd8ba7a6/workflow"
+    "console_url": "http://158.69.215.232:3000/app/313d35aa-ad72-4887-b11d-88eccd8ba7a6/workflow",
+    "api_key": "app-Wt8VMLMxkA8oy9xfg3nPPiBg",
+    "status": "published"
   },
   "10 - Operational Q&A over WMS Data": {
     "id": "9bed5c9b-9249-45de-a959-4254df2a82ab",
     "mode": "workflow",
-    "console_url": "http://158.69.215.232:3000/app/9bed5c9b-9249-45de-a959-4254df2a82ab/workflow"
+    "console_url": "http://158.69.215.232:3000/app/9bed5c9b-9249-45de-a959-4254df2a82ab/workflow",
+    "api_key": "app-t5KW7hWTZE2w16upbhaqzdTB",
+    "status": "published"
   },
   "09 - Carrier Communication Generator": {
     "id": "d9872c62-9fd0-4f8a-89e7-fb5982f9a3f5",
     "mode": "workflow",
-    "console_url": "http://158.69.215.232:3000/app/d9872c62-9fd0-4f8a-89e7-fb5982f9a3f5/workflow"
+    "console_url": "http://158.69.215.232:3000/app/d9872c62-9fd0-4f8a-89e7-fb5982f9a3f5/workflow",
+    "api_key": "app-gYFkz51tEM7kwmDzhkQsTmvZ",
+    "status": "published"
   },
   "07 - SOP Retrieval and Resolution Guidance": {
     "id": "911007c3-3472-47d0-b87c-a37d7815916f",
     "mode": "workflow",
-    "console_url": "http://158.69.215.232:3000/app/911007c3-3472-47d0-b87c-a37d7815916f/workflow"
+    "console_url": "http://158.69.215.232:3000/app/911007c3-3472-47d0-b87c-a37d7815916f/workflow",
+    "api_key": "app-wORF01458cYOOFStqdoqx4E7",
+    "status": "published"
   },
   "06 - Delay Note Parsing": {
     "id": "9b27f56c-5365-49a4-9915-12832165fd38",
     "mode": "workflow",
-    "console_url": "http://158.69.215.232:3000/app/9b27f56c-5365-49a4-9915-12832165fd38/workflow"
+    "console_url": "http://158.69.215.232:3000/app/9b27f56c-5365-49a4-9915-12832165fd38/workflow",
+    "api_key": "app-dFadF80jpFxVB6W2XLB9seFD",
+    "status": "published"
   },
   "05 - Shift Planning Recommendation Generator": {
     "id": "a01dc246-c974-47ac-96b8-fcf354a48bab",
     "mode": "workflow",
-    "console_url": "http://158.69.215.232:3000/app/a01dc246-c974-47ac-96b8-fcf354a48bab/workflow"
+    "console_url": "http://158.69.215.232:3000/app/a01dc246-c974-47ac-96b8-fcf354a48bab/workflow",
+    "api_key": "app-Jiea9FM1kyqvulY2cJlcWvGK",
+    "status": "published"
   },
   "04 - Incident Report Generator": {
     "id": "3b98612d-6459-4c0c-b35d-773d3267b57c",
     "mode": "workflow",
-    "console_url": "http://158.69.215.232:3000/app/3b98612d-6459-4c0c-b35d-773d3267b57c/workflow"
+    "console_url": "http://158.69.215.232:3000/app/3b98612d-6459-4c0c-b35d-773d3267b57c/workflow",
+    "api_key": "app-2jdlM1m2TwWbciRIQ2WMYv1G",
+    "status": "published"
   },
   "02 - Exception Summarization": {
     "id": "eaa6e343-2298-45c1-9a2a-be61b60ede05",
     "mode": "workflow",
-    "console_url": "http://158.69.215.232:3000/app/eaa6e343-2298-45c1-9a2a-be61b60ede05/workflow"
+    "console_url": "http://158.69.215.232:3000/app/eaa6e343-2298-45c1-9a2a-be61b60ede05/workflow",
+    "api_key": "app-WkT4nXEjc0I1weOBdWcyVskh",
+    "status": "published"
   },
   "01 - Warehouse Supervisor Assistant": {
     "id": "75623b98-1189-4e9d-bf89-8cfb5130144d",
     "mode": "workflow",
-    "console_url": "http://158.69.215.232:3000/app/75623b98-1189-4e9d-bf89-8cfb5130144d/workflow"
+    "console_url": "http://158.69.215.232:3000/app/75623b98-1189-4e9d-bf89-8cfb5130144d/workflow",
+    "api_key": "app-r51Ky3dt7HPl9rg4PlidsGFF",
+    "status": "published"
   },
   "Freight-Analyst-Copilot-v1": {
     "id": "9a6bcacb-b7f9-4cf8-a16a-e4ef6b889e9e",

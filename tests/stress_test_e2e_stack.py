@@ -215,11 +215,16 @@ class StressTestRunner:
         from core.dify_client import dify_client
 
         workflows_to_test = [
-            ("Supervisor Assistant", lambda: dify_client.ask_supervisor_assistant("What is the dock turnaround time and hostler shunting capacity?")),
-            ("Exception Summarizer", lambda: dify_client.summarize_exception({"title": "Shore Power Breaker Trip", "description": "Pedestal B-04 dropped below 460V", "severity": "CRITICAL"})),
-            ("Root-Cause Explainer", lambda: dify_client.explain_root_cause([{"hypothesis": "Pedestal circuit trip", "confidence": 0.91}], {"spoilage_exposure": 45000})),
-            ("Shift Planning Advisor", lambda: dify_client.generate_shift_recommendations({"picking_deficit": 6, "putaway_surplus": 3})),
-            ("Delay Note NLP Parser", lambda: dify_client.parse_delay_note("Driver delayed 2 hours on I-80 due to snowstorm. ETA revised to 16:30 for TR-9942."))
+            ("01 Supervisor Assistant", lambda: dify_client.ask_supervisor_assistant("What is the dock turnaround time and hostler shunting capacity?")),
+            ("02 Exception Summarizer", lambda: dify_client.summarize_exception({"title": "Shore Power Breaker Trip", "description": "Pedestal B-04 dropped below 460V", "severity": "CRITICAL"})),
+            ("03 Root-Cause Explainer", lambda: dify_client.explain_root_cause([{"hypothesis": "Pedestal circuit trip", "confidence": 0.91}], {"root_entity": "SPOT-B04", "delay_minutes": 25, "estimated_financial_exposure_usd": 45000})),
+            ("04 Incident Reporter", lambda: dify_client.generate_incident_report({"incident_id": "INC-772", "location": "DOCK-04", "severity": "CRITICAL", "root_cause": "Hydraulic failure"})),
+            ("05 Shift Planning Advisor", lambda: dify_client.generate_shift_recommendations({"shift": "DAY", "picking_deficit": 6, "putaway_surplus": 3})),
+            ("06 Delay Note Parser", lambda: dify_client.parse_delay_note("Driver delayed 2 hours on I-80 due to snowstorm. ETA revised to 16:30 for TR-9942.")),
+            ("07 SOP Protocol Retriever", lambda: dify_client.retrieve_sop("DOOR_BREAKDOWN")),
+            ("08 Appointment Extractor", lambda: dify_client.extract_appointment("Knight Transportation requests appointment for TR-8812 on 2026-10-25 14:00 with 24 pallets.")),
+            ("09 Carrier Communicator", lambda: dify_client.generate_carrier_message("APPOINTMENT_CONFIRMATION", {"carrier": "Knight", "trailer_id": "TR-8812", "dock_door": "DOCK-04", "time_slot": "14:00"})),
+            ("10 WMS Q&A Engine", lambda: dify_client.answer_wms_qa("What was yesterday's picker throughput?", {"units_per_hour": 94.2}))
         ]
 
         sem = asyncio.Semaphore(concurrency)
@@ -275,14 +280,35 @@ class StressTestRunner:
         await self.stress_dify_cognitive_ai(total_requests=50, concurrency=10)
 
         total_time = time.time() - t0
+        total_executed = (
+            self.results["python_api"]["success"] + self.results["python_api"]["failed"] +
+            self.results["n8n_workflows"]["success"] + self.results["n8n_workflows"]["failed"] +
+            self.results["dify_ai"]["success"] + self.results["dify_ai"]["failed"]
+        )
+        total_failures = (
+            self.results["python_api"]["failed"] +
+            self.results["n8n_workflows"]["failed"] +
+            self.results["dify_ai"]["failed"]
+        )
+
         print("\n" + "=" * 80, flush=True)
-        print("END-TO-END STRESS TEST SUITE COMPLETED SUCCESSFULLY!", flush=True)
+        print("CRITICAL EXAMINATION & END-TO-END SYSTEM INTEGRITY AUDIT", flush=True)
         print("=" * 80, flush=True)
-        print(f"Total Execution Time: {total_time:.2f} seconds", flush=True)
-        print(f"Python Analytical API:  {self.results['python_api']['success']} / 1000 (100% OK)", flush=True)
-        print(f"n8n Live Orchestration: {self.results['n8n_workflows']['success']} / 150 (100% OK)", flush=True)
-        print(f"Dify Cognitive AI:      {self.results['dify_ai']['success']} / 50 (100% OK)", flush=True)
+        print(f"Total Execution Time:        {total_time:.2f} seconds", flush=True)
+        print(f"Total Transactions Tested:   {total_executed}", flush=True)
+        print(f"Total Failed Invocations:    {total_failures}", flush=True)
+        print(f"Overall Stack Availability:  {(total_executed - total_failures) / total_executed * 100:.2f}%", flush=True)
+        print("-" * 80, flush=True)
+        print(f"Tier 1: Python Decision Engines (Port 8090):  {self.results['python_api']['success']} / 1000 OK ({self.results['python_api']['failed']} errors)", flush=True)
+        print(f"Tier 2: Live n8n Cloud Webhooks (14 Flows):  {self.results['n8n_workflows']['success']} / 150 OK ({self.results['n8n_workflows']['failed']} errors)", flush=True)
+        print(f"Tier 3: Dify AI Workflows (10 Live Apps):    {self.results['dify_ai']['success']} / 50 OK ({self.results['dify_ai']['failed']} errors)", flush=True)
         print("=" * 80, flush=True)
+
+        if total_failures == 0:
+            print("[CRITICAL EXAMINATION AUDIT PASSED] ZERO CRASHES, ZERO BREAKS, ZERO TIMEOUTS DETECTED.", flush=True)
+            print("All 3 architectural tiers operating deterministically with 100% end-to-end reliability.\n", flush=True)
+        else:
+            print(f"[CRITICAL EXAMINATION ALERT] {total_failures} requests encountered errors. Inspect logs above for trace.\n", flush=True)
 
 if __name__ == "__main__":
     runner = StressTestRunner()

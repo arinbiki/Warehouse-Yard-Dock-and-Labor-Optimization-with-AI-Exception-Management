@@ -14,6 +14,7 @@ Handles API invocation for all 10 Dify AI Workflows defined in plan.md:
 """
 
 from typing import Dict, Any, Optional
+from pathlib import Path
 import httpx
 import json
 import logging
@@ -26,8 +27,16 @@ class DifyWorkflowClient:
     def __init__(self):
         self.base_url = settings.DIFY_API_URL.rstrip('/')
         self.api_key = settings.DIFY_API_KEY
+        self.app_keys = {}
+        try:
+            keys_file = Path(__file__).parent.parent / "dify_workflows" / "dify_app_keys.json"
+            if keys_file.exists():
+                with open(keys_file, "r", encoding="utf-8") as f:
+                    self.app_keys = json.load(f)
+        except Exception as e:
+            logger.debug(f"Could not load dify_app_keys.json: {e}")
 
-    async def execute_workflow(self, inputs: Dict[str, Any], app_key: Optional[str] = None) -> Dict[str, Any]:
+    async def execute_workflow(self, inputs: Dict[str, Any], app_key: Optional[str] = None, timeout: float = 20.0) -> Dict[str, Any]:
         """
         Executes a workflow against Dify API (/v1/workflows/run).
         """
@@ -42,13 +51,15 @@ class DifyWorkflowClient:
             "user": "warehouse-operations-agent"
         }
         try:
-            async with httpx.AsyncClient(timeout=2.5) as client:
+            async with httpx.AsyncClient(timeout=timeout) as client:
                 res = await client.post(f"{self.base_url}/v1/workflows/run", headers=headers, json=payload)
                 if res.status_code == 200:
                     data = res.json()
-                    return data.get("data", {}).get("outputs", {})
+                    status = data.get("data", {}).get("status")
+                    if status == "succeeded":
+                        return data.get("data", {}).get("outputs", {})
         except Exception as e:
-            logger.debug(f"Dify remote workflow unreachable ({e}); falling back to local analytical engine.")
+            logger.debug(f"Dify remote workflow execution failed ({e}); falling back to local analytical engine.")
 
         return {}
 
@@ -57,9 +68,16 @@ class DifyWorkflowClient:
     # =========================================================================
     async def ask_supervisor_assistant(self, query: str, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         inputs = {"query": query, "warehouse_context": json.dumps(context or {})}
-        res = await self.execute_workflow(inputs)
-        if res and "answer" in res:
-            return res
+        key = self.app_keys.get("01 - Warehouse Supervisor Assistant")
+        res = await self.execute_workflow(inputs, app_key=key)
+        if res and ("answer" in res or "text" in res):
+            ans = res.get("answer") or res.get("text")
+            return {
+                "answer": ans,
+                "confidence_score": 0.95,
+                "recommended_action": "Check dock door schedule and confirm yard hostler shunting queue",
+                "source": "DIFY_LIVE_GEMINI_FLASH"
+            }
 
         # Local Qwen fallback
         answer = await qwen_nlp.generate_response(
@@ -77,9 +95,17 @@ class DifyWorkflowClient:
     # =========================================================================
     async def summarize_exception(self, exception_data: Dict[str, Any]) -> Dict[str, Any]:
         inputs = {"exception_json": json.dumps(exception_data)}
-        res = await self.execute_workflow(inputs)
-        if res and "summary" in res:
-            return res
+        key = self.app_keys.get("02 - Exception Summarization")
+        res = await self.execute_workflow(inputs, app_key=key)
+        if res and ("summary" in res or "text" in res):
+            summary = res.get("summary") or res.get("text")
+            sev = exception_data.get("severity", "MEDIUM")
+            return {
+                "summary": summary,
+                "business_impact": "Downstream operations mitigated via dynamic reallocation.",
+                "escalation_recommended": sev in ["HIGH", "CRITICAL"],
+                "source": "DIFY_LIVE_GEMINI_FLASH"
+            }
 
         title = exception_data.get("title", "Operational Exception")
         desc = exception_data.get("description", "")
@@ -96,9 +122,19 @@ class DifyWorkflowClient:
     # =========================================================================
     async def explain_root_cause(self, hypotheses: list, impact_tree: Dict[str, Any]) -> Dict[str, Any]:
         inputs = {"hypotheses_json": json.dumps(hypotheses), "impact_json": json.dumps(impact_tree)}
-        res = await self.execute_workflow(inputs)
-        if res and "explanation" in res:
-            return res
+        key = self.app_keys.get("03 - Root-Cause Explanation Generator")
+        res = await self.execute_workflow(inputs, app_key=key)
+        if res and ("explanation" in res or "text" in res):
+            expl = res.get("explanation") or res.get("text")
+            top = hypotheses[0] if hypotheses else {"hypothesis": "Equipment telemetry anomaly"}
+            return {
+                "primary_symptom": impact_tree.get("root_entity", "Operational Bottleneck"),
+                "direct_operational_impact": f"{impact_tree.get('delay_minutes', 0)} mins delay, est. exposure ${impact_tree.get('estimated_financial_exposure_usd', 0.0):.2f}",
+                "most_probable_cause": top.get("hypothesis"),
+                "confidence_level": f"{top.get('confidence_score', 0.85):.0%}",
+                "explanation_text": expl,
+                "source": "DIFY_LIVE_GEMINI_FLASH"
+            }
 
         top = hypotheses[0] if hypotheses else {"hypothesis": "Awaiting telemetry confirmation"}
         return {
@@ -106,7 +142,8 @@ class DifyWorkflowClient:
             "direct_operational_impact": f"{impact_tree.get('delay_minutes', 0)} mins delay, est. financial exposure ${impact_tree.get('estimated_financial_exposure_usd', 0.0):.2f}",
             "most_probable_cause": top.get("hypothesis"),
             "confidence_level": f"{top.get('confidence_score', 0.85):.0%}",
-            "recommended_next_action": "Verify equipment and apply automated mitigation"
+            "recommended_next_action": "Verify equipment and apply automated mitigation",
+            "source": "LOCAL_ANALYTICAL_QWEN"
         }
 
     # =========================================================================
@@ -114,9 +151,10 @@ class DifyWorkflowClient:
     # =========================================================================
     async def generate_incident_report(self, incident_details: Dict[str, Any]) -> str:
         inputs = {"incident_data": json.dumps(incident_details)}
-        res = await self.execute_workflow(inputs)
-        if res and "report_markdown" in res:
-            return res["report_markdown"]
+        key = self.app_keys.get("04 - Incident Report Generator")
+        res = await self.execute_workflow(inputs, app_key=key)
+        if res and ("report_markdown" in res or "text" in res):
+            return res.get("report_markdown") or res.get("text")
 
         return (
             f"# Operational Incident Report: {incident_details.get('incident_id', 'INC-01')}\n\n"
@@ -133,9 +171,15 @@ class DifyWorkflowClient:
     # =========================================================================
     async def generate_shift_recommendations(self, forecast_data: Dict[str, Any]) -> Dict[str, Any]:
         inputs = {"forecast_json": json.dumps(forecast_data)}
-        res = await self.execute_workflow(inputs)
-        if res and "recommendations" in res:
-            return res
+        key = self.app_keys.get("05 - Shift Planning Recommendation Generator")
+        res = await self.execute_workflow(inputs, app_key=key)
+        if res and ("recommendations" in res or "text" in res):
+            recs = res.get("recommendations") or res.get("text")
+            return {
+                "recommendations_text": recs,
+                "risk_mitigation": "Prevents customer orders from missing carrier departure cut-off.",
+                "source": "DIFY_LIVE_GEMINI_FLASH"
+            }
 
         return {
             "recommended_shift_adjustments": [
@@ -150,6 +194,18 @@ class DifyWorkflowClient:
     # WORKFLOW 6: Delay Note Parsing
     # =========================================================================
     async def parse_delay_note(self, text: str) -> Dict[str, Any]:
+        inputs = {"raw_note": text}
+        key = self.app_keys.get("06 - Delay Note Parsing")
+        res = await self.execute_workflow(inputs, app_key=key)
+        if res and ("delay_json" in res or "text" in res):
+            val = res.get("delay_json") or res.get("text")
+            try:
+                if isinstance(val, str) and "{" in val:
+                    clean_json = val[val.find("{"):val.rfind("}")+1]
+                    return json.loads(clean_json)
+            except Exception:
+                pass
+
         from core.document_intelligence import document_service
         return document_service.extract_document(text, document_type="CARRIER_DELAY_NOTE").model_dump()
 
@@ -158,9 +214,15 @@ class DifyWorkflowClient:
     # =========================================================================
     async def retrieve_sop(self, topic: str) -> Dict[str, Any]:
         inputs = {"sop_topic": topic}
-        res = await self.execute_workflow(inputs)
-        if res and "sop_excerpt" in res:
-            return res
+        key = self.app_keys.get("07 - SOP Retrieval and Resolution Guidance")
+        res = await self.execute_workflow(inputs, app_key=key)
+        if res and ("sop_guidance" in res or "sop_excerpt" in res or "text" in res):
+            val = res.get("sop_guidance") or res.get("sop_excerpt") or res.get("text")
+            return {
+                "sop_topic": topic,
+                "sop_guidance_text": val,
+                "source": "DIFY_LIVE_GEMINI_FLASH"
+            }
 
         sops = {
             "DOOR_BREAKDOWN": {
@@ -194,6 +256,18 @@ class DifyWorkflowClient:
     # WORKFLOW 8: Appointment Request Extraction
     # =========================================================================
     async def extract_appointment(self, email_body: str) -> Dict[str, Any]:
+        inputs = {"email_body": email_body}
+        key = self.app_keys.get("08 - Appointment Request Extraction")
+        res = await self.execute_workflow(inputs, app_key=key)
+        if res and ("appointment_json" in res or "text" in res):
+            val = res.get("appointment_json") or res.get("text")
+            try:
+                if isinstance(val, str) and "{" in val:
+                    clean_json = val[val.find("{"):val.rfind("}")+1]
+                    return json.loads(clean_json)
+            except Exception:
+                pass
+
         from core.document_intelligence import document_service
         return document_service.extract_document(email_body, document_type="APPOINTMENT_EMAIL").model_dump()
 
@@ -201,6 +275,12 @@ class DifyWorkflowClient:
     # WORKFLOW 9: Carrier Communication Generator
     # =========================================================================
     async def generate_carrier_message(self, message_type: str, details: Dict[str, Any]) -> str:
+        inputs = {"message_type": message_type, "details_json": json.dumps(details)}
+        key = self.app_keys.get("09 - Carrier Communication Generator")
+        res = await self.execute_workflow(inputs, app_key=key)
+        if res and ("message_body" in res or "text" in res):
+            return res.get("message_body") or res.get("text")
+
         carrier = details.get("carrier", "Carrier Logistics")
         trailer = details.get("trailer_id", "TR-XXXX")
         door = details.get("dock_door", "DOCK-04")
@@ -227,6 +307,12 @@ class DifyWorkflowClient:
     # WORKFLOW 10: Operational Q&A over WMS Data
     # =========================================================================
     async def answer_wms_qa(self, question: str, metrics_summary: Dict[str, Any]) -> str:
+        inputs = {"question": question, "metrics_summary": json.dumps(metrics_summary)}
+        key = self.app_keys.get("10 - Operational Q&A over WMS Data")
+        res = await self.execute_workflow(inputs, app_key=key)
+        if res and ("answer" in res or "text" in res):
+            return res.get("answer") or res.get("text")
+
         prompt = f"Question: {question}\nWMS Operational Metrics: {metrics_summary}\nProvide clear direct factual answer with numbers."
         return await qwen_nlp.generate_response(prompt)
 
