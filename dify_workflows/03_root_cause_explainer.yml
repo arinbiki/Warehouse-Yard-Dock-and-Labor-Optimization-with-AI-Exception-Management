@@ -1,0 +1,81 @@
+app:
+  description: 'AI Root-Cause Explanation Generator translating analytical hypothesis scores into executive operational explanations'
+  icon: 🔍
+  icon_background: '#3B82F6'
+  mode: workflow
+  name: 03 - Root-Cause Explanation Generator
+kind: app
+version: 0.1.5
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      enabled: false
+  graph:
+    edges:
+      - id: edge_start_to_llm
+        source: start_node
+        target: llm_explainer
+      - id: edge_llm_to_end
+        source: llm_explainer
+        target: end_node
+    nodes:
+      - id: start_node
+        data:
+          title: Start
+          type: start
+          variables:
+            - label: hypotheses_json
+              max_length: 4000
+              required: true
+              type: paragraph
+              variable: hypotheses_json
+            - label: impact_json
+              max_length: 4000
+              required: true
+              type: paragraph
+              variable: impact_json
+        position:
+          x: 100
+          y: 200
+      - id: llm_explainer
+        data:
+          title: Root Cause Explainer
+          type: llm
+          model:
+            provider: ollama
+            name: qwen2.5:3b
+            mode: chat
+            completion_params:
+              temperature: 0.2
+          prompt_template:
+            - role: system
+              text: |
+                You are a Senior Warehouse Operations Director explaining an operational failure.
+                Format output as:
+                - Primary Symptom
+                - Direct Operational Impact
+                - Most Probable Root Cause (with confidence %)
+                - Supporting Telemetry & Evidence
+                - Recommended Preventative Action
+            - role: user
+              text: |
+                Hypotheses: {{#start_node.hypotheses_json#}}
+                Impact Tree: {{#start_node.impact_json#}}
+          output_key: explanation
+        position:
+          x: 400
+          y: 200
+      - id: end_node
+        data:
+          title: End
+          type: end
+          outputs:
+            - value_selector:
+                - llm_explainer
+                - explanation
+              variable: explanation
+        position:
+          x: 700
+          y: 200

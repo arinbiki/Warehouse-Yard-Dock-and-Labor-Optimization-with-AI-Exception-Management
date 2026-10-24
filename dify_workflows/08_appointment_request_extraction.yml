@@ -1,0 +1,81 @@
+app:
+  description: 'AI Appointment Request Extraction Parsing Inbound/Outbound Booking Requests from Carrier Emails'
+  icon: 📅
+  icon_background: '#4338CA'
+  mode: workflow
+  name: 08 - Appointment Request Extraction
+kind: app
+version: 0.1.5
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      enabled: false
+  graph:
+    edges:
+      - id: edge_start_to_llm
+        source: start_node
+        target: llm_appt_extractor
+      - id: edge_llm_to_end
+        source: llm_appt_extractor
+        target: end_node
+    nodes:
+      - id: start_node
+        data:
+          title: Start
+          type: start
+          variables:
+            - label: email_body
+              max_length: 4000
+              required: true
+              type: paragraph
+              variable: email_body
+        position:
+          x: 100
+          y: 200
+      - id: llm_appt_extractor
+        data:
+          title: Appointment Extractor
+          type: llm
+          model:
+            provider: ollama
+            name: qwen2.5:3b
+            mode: chat
+            completion_params:
+              temperature: 0.0
+          prompt_template:
+            - role: system
+              text: |
+                Extract JSON with fields:
+                - appointment_type: (INBOUND_ASN, OUTBOUND_PICKUP, DROP_TRAILER)
+                - carrier_name: string
+                - trailer_id: string
+                - requested_date: string
+                - requested_time_slot: string
+                - pallet_count: integer
+                - temperature_controlled: boolean
+                - hazmat: boolean
+                - driver_contact: string
+                - special_handling_notes: string
+                Output strictly JSON.
+            - role: user
+              text: |
+                Carrier Booking Email:
+                {{#start_node.email_body#}}
+          output_key: extracted_appointment
+        position:
+          x: 400
+          y: 200
+      - id: end_node
+        data:
+          title: End
+          type: end
+          outputs:
+            - value_selector:
+                - llm_appt_extractor
+                - extracted_appointment
+              variable: extracted_appointment
+        position:
+          x: 700
+          y: 200

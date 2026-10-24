@@ -1,0 +1,73 @@
+app:
+  description: 'AI Exception Summarization Engine for operational tickets, business impact assessment, and escalation triage'
+  icon: ⚠️
+  icon_background: '#EF4444'
+  mode: workflow
+  name: 02 - Exception Summarization
+kind: app
+version: 0.1.5
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      enabled: false
+  graph:
+    edges:
+      - id: edge_start_to_llm
+        source: start_node
+        target: llm_summarizer
+      - id: edge_llm_to_end
+        source: llm_summarizer
+        target: end_node
+    nodes:
+      - id: start_node
+        data:
+          title: Start
+          type: start
+          variables:
+            - label: exception_json
+              max_length: 5000
+              required: true
+              type: paragraph
+              variable: exception_json
+        position:
+          x: 100
+          y: 200
+      - id: llm_summarizer
+        data:
+          title: Exception Summarizer
+          type: llm
+          model:
+            provider: ollama
+            name: qwen2.5:3b
+            mode: chat
+            completion_params:
+              temperature: 0.1
+          prompt_template:
+            - role: system
+              text: |
+                You are a Warehouse Incident and Exception Triage specialist.
+                Summarize the provided operational exception record.
+                Extract: 1) Short Summary, 2) Business Impact (cost/SLA), 3) Probable Root Causes, 4) Recommended Immediate Action, 5) Escalation Level.
+                Do NOT hallucinate facts; rely strictly on the structured payload.
+            - role: user
+              text: |
+                Exception Record JSON:
+                {{#start_node.exception_json#}}
+          output_key: summary
+        position:
+          x: 400
+          y: 200
+      - id: end_node
+        data:
+          title: End
+          type: end
+          outputs:
+            - value_selector:
+                - llm_summarizer
+                - summary
+              variable: summary
+        position:
+          x: 700
+          y: 200

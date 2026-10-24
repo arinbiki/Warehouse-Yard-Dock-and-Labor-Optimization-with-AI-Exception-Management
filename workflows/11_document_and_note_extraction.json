@@ -1,0 +1,83 @@
+{
+  "name": "11 - Document and Note Extraction",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "document-extract",
+        "responseMode": "onReceived",
+        "responseData": "allEntries"
+      },
+      "id": "webhook_11",
+      "name": "Webhook Intake",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8090/api/v1/documents/extract",
+        "method": "POST",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: $json.body.text || 'Trailer TR-8820 for Swift delayed 2 hours due to I-80 snowstorm. ETA 16:30.', document_type: 'CARRIER_DELAY_NOTE' }) }}"
+      },
+      "id": "node_11_1",
+      "name": "Call Document Intelligence",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        450,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Log workflow execution audit\nconst res = $input.all();\nreturn res.map(r => ({ json: { ...r.json, _audit: { workflow: '11 - Document and Note Extraction', processed_at: new Date().toISOString() } } }));"
+      },
+      "id": "audit_11",
+      "name": "Operational Audit Log",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        700,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Intake": {
+      "main": [
+        [
+          {
+            "node": "Call Document Intelligence",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Document Intelligence": {
+      "main": [
+        [
+          {
+            "node": "Operational Audit Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "description": "Extracts structured metadata from emails, carrier notes, BOL PDFs, and shift logs via AI NLP"
+  }
+}

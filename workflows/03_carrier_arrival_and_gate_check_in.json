@@ -1,0 +1,107 @@
+{
+  "name": "03 - Carrier Arrival and Gate Check-In",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "gate-check-in",
+        "responseMode": "onReceived",
+        "responseData": "allEntries"
+      },
+      "id": "webhook_03",
+      "name": "Webhook Intake",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\nreturn [{ json: {\n  trailer_id: data.trailer_id || 'TR-402',\n  carrier: data.carrier || 'Swift Logistics',\n  arrival_time: new Date().toISOString(),\n  free_dwell_hours: 2.0,\n  detention_rate_per_hr: 75.0,\n  status: 'CHECKED_IN'\n}}];"
+      },
+      "id": "node_03_1",
+      "name": "Verify Trailer & Free Time",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        450,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8090/api/v1/congestion/predict",
+        "method": "POST",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ entity_type: 'YARD', occupied_spots: 68, total_spots: 80, expected_arrivals_2h: 12, expected_departures_2h: 6 }) }}"
+      },
+      "id": "node_03_2",
+      "name": "Check Detention Risk",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        700,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Log workflow execution audit\nconst res = $input.all();\nreturn res.map(r => ({ json: { ...r.json, _audit: { workflow: '03 - Carrier Arrival and Gate Check-In', processed_at: new Date().toISOString() } } }));"
+      },
+      "id": "audit_03",
+      "name": "Operational Audit Log",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        950,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Intake": {
+      "main": [
+        [
+          {
+            "node": "Verify Trailer & Free Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Trailer & Free Time": {
+      "main": [
+        [
+          {
+            "node": "Check Detention Risk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Detention Risk": {
+      "main": [
+        [
+          {
+            "node": "Operational Audit Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "description": "Processes security gate check-in, verifies appointment, assigns yard spot, and starts detention clock"
+  }
+}

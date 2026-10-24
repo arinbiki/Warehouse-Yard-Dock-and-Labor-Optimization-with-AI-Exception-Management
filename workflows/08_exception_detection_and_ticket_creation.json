@@ -1,0 +1,83 @@
+{
+  "name": "08 - Exception Detection and Ticket Creation",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "exception-detection",
+        "responseMode": "onReceived",
+        "responseData": "allEntries"
+      },
+      "id": "webhook_08",
+      "name": "Webhook Intake",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8090/api/v1/exceptions/analyze",
+        "method": "POST",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ category: $json.body.category || 'OUTBOUND', title: $json.body.title || 'Wave 4 Picking Delay', description: $json.body.description || 'Aisle congestion detected', trigger_entity_id: 'WAVE-04', delay_minutes: 45, affected_orders: ['ORD-101', 'ORD-102', 'ORD-103'] }) }}"
+      },
+      "id": "node_08_1",
+      "name": "Analyze Exception & Root Cause",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        450,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Log workflow execution audit\nconst res = $input.all();\nreturn res.map(r => ({ json: { ...r.json, _audit: { workflow: '08 - Exception Detection and Ticket Creation', processed_at: new Date().toISOString() } } }));"
+      },
+      "id": "audit_08",
+      "name": "Operational Audit Log",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        700,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Intake": {
+      "main": [
+        [
+          {
+            "node": "Analyze Exception & Root Cause",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Exception & Root Cause": {
+      "main": [
+        [
+          {
+            "node": "Operational Audit Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "description": "Monitors operational threshold breaches, generates root-cause hypotheses, and creates tickets"
+  }
+}

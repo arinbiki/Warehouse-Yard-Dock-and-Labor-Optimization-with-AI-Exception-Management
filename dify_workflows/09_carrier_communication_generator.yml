@@ -1,0 +1,77 @@
+app:
+  description: 'AI Carrier Communication Generator drafting professional confirmations, reschedule notices, and detention warnings'
+  icon: ✉️
+  icon_background: '#047857'
+  mode: workflow
+  name: 09 - Carrier Communication Generator
+kind: app
+version: 0.1.5
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      enabled: false
+  graph:
+    edges:
+      - id: edge_start_to_llm
+        source: start_node
+        target: llm_comm_gen
+      - id: edge_llm_to_end
+        source: llm_comm_gen
+        target: end_node
+    nodes:
+      - id: start_node
+        data:
+          title: Start
+          type: start
+          variables:
+            - label: message_type
+              max_length: 100
+              required: true
+              type: text-input
+              variable: message_type
+            - label: details_json
+              max_length: 3000
+              required: true
+              type: paragraph
+              variable: details_json
+        position:
+          x: 100
+          y: 200
+      - id: llm_comm_gen
+        data:
+          title: Communication Generator
+          type: llm
+          model:
+            provider: ollama
+            name: qwen2.5:3b
+            mode: chat
+            completion_params:
+              temperature: 0.2
+          prompt_template:
+            - role: system
+              text: |
+                You are the Warehouse Dispatch Communications Officer.
+                Draft a professional, clear email/EDI notification to the carrier.
+                Adhere to logistics standards, including door assignments, security check-in protocols, and detention buffer clauses.
+            - role: user
+              text: |
+                Message Type: {{#start_node.message_type#}}
+                Context Details: {{#start_node.details_json#}}
+          output_key: drafted_message
+        position:
+          x: 400
+          y: 200
+      - id: end_node
+        data:
+          title: End
+          type: end
+          outputs:
+            - value_selector:
+                - llm_comm_gen
+                - drafted_message
+              variable: drafted_message
+        position:
+          x: 700
+          y: 200

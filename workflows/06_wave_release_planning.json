@@ -1,0 +1,83 @@
+{
+  "name": "06 - Wave Release Planning",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "wave-plan-release",
+        "responseMode": "onReceived",
+        "responseData": "allEntries"
+      },
+      "id": "webhook_06",
+      "name": "Webhook Intake",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8090/api/v1/wave/plan",
+        "method": "POST",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ wave_id: 'WAVE-2026-04', total_orders: 85, total_units: 420, avg_lines_per_order: 3.2, available_pickers: 8 }) }}"
+      },
+      "id": "node_06_1",
+      "name": "Run Wave Optimizer",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        450,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Log workflow execution audit\nconst res = $input.all();\nreturn res.map(r => ({ json: { ...r.json, _audit: { workflow: '06 - Wave Release Planning', processed_at: new Date().toISOString() } } }));"
+      },
+      "id": "audit_06",
+      "name": "Operational Audit Log",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        700,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Intake": {
+      "main": [
+        [
+          {
+            "node": "Run Wave Optimizer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Wave Optimizer": {
+      "main": [
+        [
+          {
+            "node": "Operational Audit Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "description": "Evaluates outbound orders, labor capacity, and cut-off deadlines to optimize wave picking release"
+  }
+}

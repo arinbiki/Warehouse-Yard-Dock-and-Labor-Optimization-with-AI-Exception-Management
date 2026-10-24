@@ -1,0 +1,111 @@
+{
+  "name": "02 - Inbound Appointment Request",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "appointment-request",
+        "responseMode": "onReceived",
+        "responseData": "allEntries"
+      },
+      "id": "webhook_02",
+      "name": "Webhook Intake",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8090/api/v1/documents/extract",
+        "method": "POST",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: $json.body.email_body || $json.email_body, document_type: 'APPOINTMENT_EMAIL' }) }}"
+      },
+      "id": "node_02_1",
+      "name": "Dify Extract Appointment",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        450,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8090/api/v1/dock/schedule",
+        "method": "POST",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ appointment_id: $json.matched_entity_id || 'APT-' + Date.now(), trailer_type: 'DRY_VAN_53', pallet_count: 24 }) }}"
+      },
+      "id": "node_02_2",
+      "name": "Call Python Dock Optimizer",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        700,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Log workflow execution audit\nconst res = $input.all();\nreturn res.map(r => ({ json: { ...r.json, _audit: { workflow: '02 - Inbound Appointment Request', processed_at: new Date().toISOString() } } }));"
+      },
+      "id": "audit_02",
+      "name": "Operational Audit Log",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        950,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Intake": {
+      "main": [
+        [
+          {
+            "node": "Dify Extract Appointment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dify Extract Appointment": {
+      "main": [
+        [
+          {
+            "node": "Call Python Dock Optimizer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Python Dock Optimizer": {
+      "main": [
+        [
+          {
+            "node": "Operational Audit Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "description": "Extracts carrier booking requests, evaluates door capacity, and calls Python dock scheduler"
+  }
+}

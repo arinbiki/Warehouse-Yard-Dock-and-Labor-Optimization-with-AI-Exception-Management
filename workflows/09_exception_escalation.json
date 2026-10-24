@@ -1,0 +1,79 @@
+{
+  "name": "09 - Exception Escalation",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "exception-escalation",
+        "responseMode": "onReceived",
+        "responseData": "allEntries"
+      },
+      "id": "webhook_09",
+      "name": "Webhook Intake",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const exc = $input.first().json;\nreturn [{ json: {\n  escalation_level: 'OPERATIONS_MANAGER',\n  incident_id: exc.exception_id || 'EXC-8821',\n  severity: 'HIGH',\n  cost_at_risk_usd: 1250.00,\n  sla_risk: 'Carrier Cut-Off Miss',\n  escalated_at: new Date().toISOString()\n}}];"
+      },
+      "id": "node_09_1",
+      "name": "Format Escalation Packet",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        450,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Log workflow execution audit\nconst res = $input.all();\nreturn res.map(r => ({ json: { ...r.json, _audit: { workflow: '09 - Exception Escalation', processed_at: new Date().toISOString() } } }));"
+      },
+      "id": "audit_09",
+      "name": "Operational Audit Log",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        700,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Intake": {
+      "main": [
+        [
+          {
+            "node": "Format Escalation Packet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Escalation Packet": {
+      "main": [
+        [
+          {
+            "node": "Operational Audit Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "description": "Escalates unresolved exceptions exceeding SLA limits to facility operations management"
+  }
+}

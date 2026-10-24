@@ -1,0 +1,83 @@
+{
+  "name": "07 - Labor Allocation Planning",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "labor-allocation",
+        "responseMode": "onReceived",
+        "responseData": "allEntries"
+      },
+      "id": "webhook_07",
+      "name": "Webhook Intake",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8090/api/v1/labor/allocate",
+        "method": "POST",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ zone_demands: [{ zone_id: 'ZONE-A-PICK', task_type: 'PICKING', required_headcount: 12, current_headcount: 8 }, { zone_id: 'ZONE-PUTAWAY', task_type: 'PUTAWAY', required_headcount: 4, current_headcount: 7 }] }) }}"
+      },
+      "id": "node_07_1",
+      "name": "Run Labor Solver",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        450,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Log workflow execution audit\nconst res = $input.all();\nreturn res.map(r => ({ json: { ...r.json, _audit: { workflow: '07 - Labor Allocation Planning', processed_at: new Date().toISOString() } } }));"
+      },
+      "id": "audit_07",
+      "name": "Operational Audit Log",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        700,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Intake": {
+      "main": [
+        [
+          {
+            "node": "Run Labor Solver",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Labor Solver": {
+      "main": [
+        [
+          {
+            "node": "Operational Audit Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "description": "Forecasts shift workload, matches skills, balances zones, and routes overtime recommendations"
+  }
+}

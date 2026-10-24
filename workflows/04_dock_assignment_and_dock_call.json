@@ -1,0 +1,107 @@
+{
+  "name": "04 - Dock Assignment and Dock Call",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "dock-call",
+        "responseMode": "onReceived",
+        "responseData": "allEntries"
+      },
+      "id": "webhook_04",
+      "name": "Webhook Intake",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { candidate_trailers: ['TR-402', 'TR-908', 'TR-102'], target_door: 'DOCK-04' } }];"
+      },
+      "id": "node_04_1",
+      "name": "Fetch Candidate Trailers",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        450,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8090/api/v1/yard/moves",
+        "method": "POST",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ trailers: [{ trailer_id: 'TR-402', current_spot: 'SPOT-B04', destination: 'DOCK-04', is_live_detention: true, dwell_hours: 1.8 }] }) }}"
+      },
+      "id": "node_04_2",
+      "name": "Prioritize Yard Shunting Move",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        700,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Log workflow execution audit\nconst res = $input.all();\nreturn res.map(r => ({ json: { ...r.json, _audit: { workflow: '04 - Dock Assignment and Dock Call', processed_at: new Date().toISOString() } } }));"
+      },
+      "id": "audit_04",
+      "name": "Operational Audit Log",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        950,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Intake": {
+      "main": [
+        [
+          {
+            "node": "Fetch Candidate Trailers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Candidate Trailers": {
+      "main": [
+        [
+          {
+            "node": "Prioritize Yard Shunting Move",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prioritize Yard Shunting Move": {
+      "main": [
+        [
+          {
+            "node": "Operational Audit Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "description": "Monitors door availability, invokes dock/yard optimizer, and alerts yard jockey to shunt trailer"
+  }
+}

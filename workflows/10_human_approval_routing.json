@@ -1,0 +1,79 @@
+{
+  "name": "10 - Human Approval Routing",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "human-approval",
+        "responseMode": "onReceived",
+        "responseData": "allEntries"
+      },
+      "id": "webhook_10",
+      "name": "Webhook Intake",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const req = $input.first().json;\nconst requires_approval = req.cost_impact > 100.0 || req.category === 'LABOR_OVERTIME';\nreturn [{ json: {\n  approval_id: 'APR-' + Date.now(),\n  requires_human_signoff: requires_approval,\n  approver_role: 'OPERATIONS_SUPERVISOR',\n  details: req\n}}];"
+      },
+      "id": "node_10_1",
+      "name": "Evaluate Approval Threshold",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        450,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Log workflow execution audit\nconst res = $input.all();\nreturn res.map(r => ({ json: { ...r.json, _audit: { workflow: '10 - Human Approval Routing', processed_at: new Date().toISOString() } } }));"
+      },
+      "id": "audit_10",
+      "name": "Operational Audit Log",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        700,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Intake": {
+      "main": [
+        [
+          {
+            "node": "Evaluate Approval Threshold",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluate Approval Threshold": {
+      "main": [
+        [
+          {
+            "node": "Operational Audit Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "description": "Packages high-impact recommendations (overtime, appointment reschedule, wave splits) for supervisor sign-off"
+  }
+}

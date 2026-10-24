@@ -1,0 +1,99 @@
+{
+  "system": {
+    "name": "Warehouse, Yard, Dock, and Labor Optimization with AI Exception Management",
+    "version": "1.0.0",
+    "facility": "Midwest Distribution Logistics Hub (WH-01)",
+    "decision_engine_port": 8090,
+    "kpi_metrics": {
+      "dock_turnaround_reduction_pct": 28.5,
+      "detention_cost_savings_monthly_usd": 42500,
+      "cut_off_sla_adherence_pct": 99.4,
+      "labor_productivity_gain_pct": 18.2,
+      "mean_time_to_resolve_exceptions_mins": 14.8,
+      "ai_recommendation_acceptance_pct": 96.7
+    }
+  },
+  "layers": [
+    {
+      "id": "layer_1",
+      "name": "Layer 1: Real-Time Integrations",
+      "color": "#3B82F6",
+      "components": [
+        {"id": "wms", "name": "Warehouse Management System (WMS)", "type": "REST / Webhook", "desc": "Order lines, inventory balance, picking tasks, staging buffer"},
+        {"id": "tms", "name": "Transportation Management System (TMS)", "type": "EDI 214 / Webhook", "desc": "Inbound ASNs, carrier departure cut-offs, dispatch schedules"},
+        {"id": "gate_rfid", "name": "Security Gate & RFID Geofence", "type": "IoT Event Stream", "desc": "Truck arrival timestamp, trailer number OCR, optical check-in"},
+        {"id": "dock_sensors", "name": "Ultrasonic & Camera Dock Sensors", "type": "MQTT / Telemetry", "desc": "Door occupancy, leveler status, vehicle restraint lock"},
+        {"id": "iot_reefer", "name": "Reefer Telematics & Temp Sensors", "type": "IoT / MODBUS", "desc": "Cold-chain continuous temperature logs, shore power voltage"}
+      ]
+    },
+    {
+      "id": "layer_2",
+      "name": "Layer 2: n8n Workflow Orchestration",
+      "color": "#10B981",
+      "components": [
+        {"id": "wf_01", "name": "01 - Event Intake & State Engine", "endpoint": "POST /webhook/warehouse-event-intake"},
+        {"id": "wf_02", "name": "02 - Inbound Appointment Request", "endpoint": "POST /webhook/appointment-request"},
+        {"id": "wf_03", "name": "03 - Carrier Gate Check-In", "endpoint": "POST /webhook/gate-check-in"},
+        {"id": "wf_04", "name": "04 - Dock Assignment & Dock Call", "endpoint": "POST /webhook/dock-call"},
+        {"id": "wf_05", "name": "05 - Yard Hostler Shunting Dispatch", "endpoint": "POST /webhook/yard-movement-task"},
+        {"id": "wf_06", "name": "06 - Outbound Wave Release Planning", "endpoint": "POST /webhook/wave-plan-release"},
+        {"id": "wf_07", "name": "07 - Dynamic Labor Allocation", "endpoint": "POST /webhook/labor-allocation"},
+        {"id": "wf_08", "name": "08 - Exception Detection & Ticket", "endpoint": "POST /webhook/exception-detection"},
+        {"id": "wf_09", "name": "09 - SLA Breach Escalation", "endpoint": "POST /webhook/exception-escalation"},
+        {"id": "wf_10", "name": "10 - Human Approval Gate Routing", "endpoint": "POST /webhook/human-approval"},
+        {"id": "wf_11", "name": "11 - Document & Delay Note Extraction", "endpoint": "POST /webhook/document-extract"},
+        {"id": "wf_12", "name": "12 - Real-Time Alert Dispatch", "endpoint": "POST /webhook/alerts-dispatch"},
+        {"id": "wf_13", "name": "13 - Operational Dashboard Sync", "endpoint": "POST /webhook/dashboard-update"},
+        {"id": "wf_14", "name": "14 - Settlement & Continuous Feedback", "endpoint": "POST /webhook/feedback-learning"}
+      ]
+    },
+    {
+      "id": "layer_3",
+      "name": "Layer 3: Python Analytical Core (Port 8090)",
+      "color": "#8B5CF6",
+      "components": [
+        {"id": "srv_01", "name": "Master Data Service", "desc": "Entity validation, capacity checks, door compatibility"},
+        {"id": "srv_02", "name": "Event Processing Service", "desc": "Payload normalization, state machine, deduplication"},
+        {"id": "srv_03", "name": "Dock Scheduling Service", "desc": "Appointment priority, turnaround estimation, detention risk"},
+        {"id": "srv_04", "name": "Yard Optimization Service", "desc": "Spot scoring, hostler shunting queue, yard congestion"},
+        {"id": "srv_05", "name": "Wave Planning Service", "desc": "Picking method selection, cut-off risk, wave duration"},
+        {"id": "srv_06", "name": "Labor Optimization Service", "desc": "Workload forecast, dynamic reallocation, fatigue checks"},
+        {"id": "srv_07", "name": "Slotting Optimization Service", "desc": "ABC Pareto velocity, affinity clustering, golden zone"},
+        {"id": "srv_08", "name": "Congestion Prediction Service", "desc": "Predictive bottleneck detection across zones & doors"},
+        {"id": "srv_09", "name": "Exception Root-Cause Engine", "desc": "Impact propagation tree, hypothesis scoring, ranked actions"},
+        {"id": "srv_10", "name": "Simulation & What-If Service", "desc": "Digital-twin scenario tester (late carrier, door outage)"},
+        {"id": "srv_11", "name": "Document Intelligence Service", "desc": "Regex entity parsing for BOLs, emails, delay notes"},
+        {"id": "srv_12", "name": "Learning Feedback Service", "desc": "Plan vs actual variance, MAE tracking, model drift"}
+      ]
+    },
+    {
+      "id": "layer_4",
+      "name": "Layer 4: AI Interaction & Cognitive Layer",
+      "color": "#EC4899",
+      "components": [
+        {"id": "dify_01", "name": "Supervisor Operations Assistant", "engine": "Dify + Qwen 3B"},
+        {"id": "dify_02", "name": "Exception Summarization Engine", "engine": "Dify + Qwen 3B"},
+        {"id": "dify_03", "name": "Root-Cause Explanation Generator", "engine": "Dify + Qwen 3B"},
+        {"id": "dify_04", "name": "Incident Report Formatter", "engine": "Dify + Qwen 3B"},
+        {"id": "dify_05", "name": "Shift Planning Advisor", "engine": "Dify + Qwen 3B"},
+        {"id": "dify_06", "name": "Delay Note NLP Parser", "engine": "Dify + Qwen 3B"},
+        {"id": "dify_07", "name": "SOP Protocol Retriever", "engine": "Dify + Qwen 3B"},
+        {"id": "dify_08", "name": "Appointment Email Extractor", "engine": "Dify + Qwen 3B"},
+        {"id": "dify_09", "name": "Carrier Communication Generator", "engine": "Dify + Qwen 3B"},
+        {"id": "dify_10", "name": "Operational Q&A over WMS Data", "engine": "Dify + Qwen 3B"}
+      ]
+    },
+    {
+      "id": "layer_5",
+      "name": "Layer 5: Control Tower & Experience Layer",
+      "color": "#F59E0B",
+      "components": [
+        {"id": "ui_dock", "name": "Dock Schedule Board", "desc": "Real-time door status, turnaround gauges, detention clocks"},
+        {"id": "ui_yard", "name": "Interactive Yard Map", "desc": "Spot occupancy, reefer shore power plugs, hostler moves"},
+        {"id": "ui_waves", "name": "Wave Release Monitor", "desc": "Picking method, picker headcounts, cut-off SLA countdown"},
+        {"id": "ui_labor", "name": "Labor Balancing Console", "desc": "Zone productivity heatmaps, fatigue levels, overtime approval"},
+        {"id": "ui_exceptions", "name": "Exception Triage Queue", "desc": "Downstream impact trees, root causes, one-click mitigations"}
+      ]
+    }
+  ]
+}

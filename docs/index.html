@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Warehouse, Yard, Dock, & Labor Optimization Engine | Enterprise Architecture Console</title>
+  <meta name="description" content="Continuous multi-objective operational optimization and AI exception management across dock scheduling, yard shunting, wave planning, and dynamic labor allocation.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #090D16;
+      --card-bg: rgba(17, 24, 39, 0.75);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --primary: #3B82F6;
+      --success: #10B981;
+      --warning: #F59E0B;
+      --danger: #EF4444;
+      --purple: #8B5CF6;
+      --pink: #EC4899;
+      --cyan: #06B6D4;
+      --text-main: #F3F4F6;
+      --text-muted: #9CA3AF;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      font-family: 'Outfit', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.5;
+    }
+
+    .ambient-glow {
+      position: fixed;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 1000px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, rgba(139, 92, 246, 0.08) 50%, transparent 80%);
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 32px 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 32px;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 24px;
+    }
+
+    .brand-title {
+      font-size: 28px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #60A5FA, #A78BFA, #F472B6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.5px;
+    }
+
+    .brand-subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 13px;
+      color: #34D399;
+      font-weight: 600;
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10B981;
+      box-shadow: 0 0 10px #10B981;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.3); opacity: 1; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+
+    /* KPI Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 16px;
+      margin-bottom: 36px;
+    }
+
+    .kpi-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 18px 20px;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(96, 165, 250, 0.4);
+    }
+
+    .kpi-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+    }
+
+    .kpi-value {
+      font-size: 26px;
+      font-weight: 800;
+      margin: 6px 0 2px;
+      color: #FFF;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .kpi-delta {
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .delta-green { color: #34D399; }
+    .delta-purple { color: #C084FC; }
+
+    /* Interactive Scenario Selector */
+    .scenario-bar {
+      background: rgba(17, 24, 39, 0.6);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 14px 20px;
+      margin-bottom: 32px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .scenario-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #93C5FD;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .scenario-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-main);
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .scenario-btn:hover {
+      background: rgba(59, 130, 246, 0.2);
+      border-color: var(--primary);
+    }
+
+    .scenario-btn.active {
+      background: var(--primary);
+      border-color: #60A5FA;
+      box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+    }
+
+    /* Layer Architecture View */
+    .architecture-layers {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+
+    .layer-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 24px;
+      backdrop-filter: blur(12px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .layer-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+    }
+
+    .layer-1::before { background: var(--primary); }
+    .layer-2::before { background: var(--success); }
+    .layer-3::before { background: var(--purple); }
+    .layer-4::before { background: var(--pink); }
+    .layer-5::before { background: var(--warning); }
+
+    .layer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .layer-name {
+      font-size: 18px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .layer-badge {
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .components-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 12px;
+    }
+
+    .comp-box {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      padding: 14px 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .comp-box:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .comp-box.highlight {
+      border-color: #38BDF8 !important;
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
+      background: rgba(56, 189, 248, 0.1) !important;
+    }
+
+    .comp-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .comp-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    /* Live Trace Inspector Panel */
+    .inspector-panel {
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 40px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .inspector-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 12px;
+    }
+
+    .inspector-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #60A5FA;
+    }
+
+    .trace-feed {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      background: #020617;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 16px;
+      height: 220px;
+      overflow-y: auto;
+      color: #94A3B8;
+      line-height: 1.6;
+    }
+
+    .trace-line-highlight {
+      color: #38BDF8;
+      font-weight: 600;
+    }
+    .trace-line-success {
+      color: #34D399;
+      font-weight: 600;
+    }
+    .trace-line-danger {
+      color: #F87171;
+      font-weight: 600;
+    }
+
+    footer {
+      text-align: center;
+      padding: 32px 0 16px;
+      color: var(--text-muted);
+      font-size: 13px;
+      border-top: 1px solid var(--card-border);
+    }
+  </style>
+</head>
+<body>
+  <div class="ambient-glow"></div>
+
+  <div class="container">
+    <header>
+      <div>
+        <h1 class="brand-title">Warehouse, Yard, Dock, & Labor Optimization Platform</h1>
+        <p class="brand-subtitle">AI-Driven Continuous Operational Optimization & Automated Root-Cause Engine (Midwest Hub WH-01)</p>
+      </div>
+      <div class="status-badge">
+        <span class="pulse-dot"></span>
+        DECISION ENGINE ACTIVE :8090
+      </div>
+    </header>
+
+    <!-- KPI Section -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Dock Turnaround Reduction</div>
+        <div class="kpi-value">28.5%</div>
+        <div class="kpi-delta delta-green">▼ 75m to 54m nominal dwell</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Detention Costs Prevented</div>
+        <div class="kpi-value">$42,500</div>
+        <div class="kpi-delta delta-green">▲ 92.4% carrier SLA adherence</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Outbound Cut-Off Adherence</div>
+        <div class="kpi-value">99.4%</div>
+        <div class="kpi-delta delta-green">▲ Zero air-freight penalties</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Labor Productivity Gain</div>
+        <div class="kpi-value">+18.2%</div>
+        <div class="kpi-delta delta-purple">▲ 41.5 units/picker-hour</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Mean Exception MTTR</div>
+        <div class="kpi-value">14.8m</div>
+        <div class="kpi-delta delta-green">▼ Down from 62 min manual</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">AI Acceptance Rate</div>
+        <div class="kpi-value">96.7%</div>
+        <div class="kpi-delta delta-purple">★ 10 Dify cognitive workflows</div>
+      </div>
+    </div>
+
+    <!-- Live Simulation Scenario Player -->
+    <div class="scenario-bar">
+      <span class="scenario-title">⚡ Interactive Execution Scenarios:</span>
+      <button class="scenario-btn active" id="btn-scen-1" onclick="runScenario(1)">1. Reefer Shore Power Shunt</button>
+      <button class="scenario-btn" id="btn-scen-2" onclick="runScenario(2)">2. Wave Congestion & Dynamic Labor Rebalance</button>
+      <button class="scenario-btn" id="btn-scen-3" onclick="runScenario(3)">3. Dock Leveler Outage & Divert</button>
+      <button class="scenario-btn" id="btn-scen-4" onclick="runScenario(4)">4. Digital-Twin Carrier Late Delay ($1,192 Averted)</button>
+    </div>
+
+    <!-- Live Trace Inspector -->
+    <div class="inspector-panel">
+      <div class="inspector-header">
+        <span class="inspector-title" id="inspector-scenario-title">Active Scenario: Cold-Chain Perishable Trailer Shore Power Fluctuation</span>
+        <span style="font-size: 12px; color: #94A3B8;">Event Stream Frequency: 200ms | Hostler Shunt SLA: 15 min</span>
+      </div>
+      <div class="trace-feed" id="trace-output">
+        [16:00:01] INTAKE: IoT Temperature Sensor Pedestal Y-22 logged +3.8C rise over 30 minutes in Reefer Trailer TR-SIM-03.<br>
+        [16:00:02] LAYER 2 (n8n WF-08): Threshold breached. Created Exception Ticket EXC-8821 (Severity: CRITICAL).<br>
+        [16:00:03] LAYER 3 (Python Serv 9): Propagated impact -> $45,000 perishable dairy spoilage exposure within 45 mins.<br>
+        [16:00:04] LAYER 3 (Python Serv 4): Yard Spot Scoring evaluated 80 spots -> Target Spot SPOT-B04 has active 480V 3-phase plug.<br>
+        [16:00:05] LAYER 4 (Dify WF-03): Root-Cause Confidence 89% -> Pedestal circuit breaker trip on Row B.<br>
+        [16:00:06] LAYER 2 (n8n WF-05): Dispatched urgent shunting work order to Hostler 01 ($25 cost).<br>
+        [16:00:07] RESOLUTION: Trailer shunted to SPOT-B04 in 8 minutes. Temperature stabilized at +3.5C. Spoilage loss prevented: $45,000.
+      </div>
+    </div>
+
+    <!-- Architecture 5-Layer Stack -->
+    <div class="architecture-layers">
+
+      <!-- LAYER 1 -->
+      <div class="layer-card layer-1">
+        <div class="layer-header">
+          <div class="layer-name">
+            <span>🌐 Layer 1: Operational Integration Layer</span>
+          </div>
+          <span class="layer-badge">WMS / TMS / Gate RFID / IoT MQTT</span>
+        </div>
+        <div class="components-grid">
+          <div class="comp-box" id="comp-wms">
+            <div class="comp-title">Warehouse Management (WMS) <span style="color:#60A5FA;">REST</span></div>
+            <div class="comp-desc">Real-time inventory levels, order lines, bin locations, and picking task queues.</div>
+          </div>
+          <div class="comp-box" id="comp-tms">
+            <div class="comp-title">Transportation Management (TMS) <span style="color:#60A5FA;">EDI 214</span></div>
+            <div class="comp-desc">Inbound ASNs, carrier departure deadlines, load manifests, and cut-off timestamps.</div>
+          </div>
+          <div class="comp-box" id="comp-gate">
+            <div class="comp-title">Security Gate & RFID Geofence <span style="color:#60A5FA;">OCR</span></div>
+            <div class="comp-desc">Automated truck optical license recognition, arrival timestamps, and free dwell clock initialization.</div>
+          </div>
+          <div class="comp-box" id="comp-iot">
+            <div class="comp-title">Dock Ultrasonic & Temp Sensors <span style="color:#60A5FA;">MQTT</span></div>
+            <div class="comp-desc">Door occupancy detection, leveler interlock safety alarms, and continuous cold-chain telemetry.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LAYER 2 -->
+      <div class="layer-card layer-2">
+        <div class="layer-header">
+          <div class="layer-name">
+            <span>⚡ Layer 2: n8n Workflow Orchestration Layer (14 Workflows)</span>
+          </div>
+          <span class="layer-badge">Self-Hosted n8n Production Workflows</span>
+        </div>
+        <div class="components-grid">
+          <div class="comp-box" id="comp-wf01">
+            <div class="comp-title">01 - Event Intake & State Engine</div>
+            <div class="comp-desc">Normalizes incoming WMS/TMS/Gate payloads and maps operational dependencies.</div>
+          </div>
+          <div class="comp-box" id="comp-wf02">
+            <div class="comp-title">02 - Inbound Appointment Intake</div>
+            <div class="comp-desc">Validates door constraints, checks labor availability, and calls dock optimizer.</div>
+          </div>
+          <div class="comp-box" id="comp-wf03">
+            <div class="comp-title">03 - Gate Check-In & Yard Spot</div>
+            <div class="comp-desc">Assigns parking coordinates and initiates carrier 2.0-hour free detention countdown.</div>
+          </div>
+          <div class="comp-box" id="comp-wf04">
+            <div class="comp-title">04 - Dock Assignment & Dock Call</div>
+            <div class="comp-desc">Coordinates door availability and dispatches yard jockey to spot trailer at dock.</div>
+          </div>
+          <div class="comp-box" id="comp-wf05">
+            <div class="comp-title">05 - Yard Hostler Shunting Tasks</div>
+            <div class="comp-desc">Ranks shunts by detention risk and monitors physical move turnaround times.</div>
+          </div>
+          <div class="comp-box" id="comp-wf06">
+            <div class="comp-title">06 - Outbound Wave Release</div>
+            <div class="comp-desc">Schedules wave release, picks method (Batch/Zone/Cluster), and protects cut-offs.</div>
+          </div>
+          <div class="comp-box" id="comp-wf07">
+            <div class="comp-title">07 - Dynamic Labor Allocation</div>
+            <div class="comp-desc">Identifies picker shortages and automatically rebalances cross-trained staff.</div>
+          </div>
+          <div class="comp-box" id="comp-wf08">
+            <div class="comp-title">08 - Exception Detection & Ticket</div>
+            <div class="comp-desc">Evaluates threshold breaches, calculates financial exposure, and opens tickets.</div>
+          </div>
+          <div class="comp-box" id="comp-wf09">
+            <div class="comp-title">09 - SLA Breach Escalation</div>
+            <div class="comp-desc">Escalates unresolved high-severity bottlenecks directly to facility managers.</div>
+          </div>
+          <div class="comp-box" id="comp-wf10">
+            <div class="comp-title">10 - Human Approval Gate</div>
+            <div class="comp-desc">Packages overtime authorizations and wave splits for supervisor decision.</div>
+          </div>
+          <div class="comp-box" id="comp-wf11">
+            <div class="comp-title">11 - Document & Delay Note Extraction</div>
+            <div class="comp-desc">Parses driver delay emails, BOLs, and shift notes via AI NLP extraction.</div>
+          </div>
+          <div class="comp-box" id="comp-wf12">
+            <div class="comp-title">12 - Real-Time Alert Dispatch</div>
+            <div class="comp-desc">Sends instantaneous notifications for detention warnings and equipment down.</div>
+          </div>
+          <div class="comp-box" id="comp-wf13">
+            <div class="comp-title">13 - Operational Dashboard Sync</div>
+            <div class="comp-desc">Pushes live metrics to dock schedule boards, yard maps, and KPI consoles.</div>
+          </div>
+          <div class="comp-box" id="comp-wf14">
+            <div class="comp-title">14 - Settlement & Continuous Feedback</div>
+            <div class="comp-desc">Calculates turnaround MAE, productivity drift, and updates baseline models.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LAYER 3 -->
+      <div class="layer-card layer-3">
+        <div class="layer-header">
+          <div class="layer-name">
+            <span>⚙️ Layer 3: Python Analytical Core (Port 8090)</span>
+          </div>
+          <span class="layer-badge">FastAPI / SQLite WAL / 12 Services</span>
+        </div>
+        <div class="components-grid">
+          <div class="comp-box" id="comp-s01">
+            <div class="comp-title">01 - Master Data Service</div>
+            <div class="comp-desc">Door/trailer compatibility, zone capacities, and facility constraints.</div>
+          </div>
+          <div class="comp-box" id="comp-s02">
+            <div class="comp-title">02 - Event Processing Service</div>
+            <div class="comp-desc">Payload normalization, immutable audit logging, and state engine transitions.</div>
+          </div>
+          <div class="comp-box" id="comp-s03">
+            <div class="comp-title">03 - Dock Scheduling Service</div>
+            <div class="comp-desc">Detention Risk = P(Excess > Free Time) * Excess Hours * $75/hr. Turnaround solver.</div>
+          </div>
+          <div class="comp-box" id="comp-s04">
+            <div class="comp-title">04 - Yard Optimization Service</div>
+            <div class="comp-desc">Spot scoring (shore power, door proximity) & hostler movement priority queue.</div>
+          </div>
+          <div class="comp-box" id="comp-s05">
+            <div class="comp-title">05 - Wave Planning Service</div>
+            <div class="comp-desc">Picking strategy selection (Batch/Zone/Cluster) & carrier cut-off risk scoring.</div>
+          </div>
+          <div class="comp-box" id="comp-s06">
+            <div class="comp-title">06 - Labor Optimization Service</div>
+            <div class="comp-desc">Workload forecasting, dynamic bottleneck rebalancing, and fatigue index (0.85).</div>
+          </div>
+          <div class="comp-box" id="comp-s07">
+            <div class="comp-title">07 - Slotting Optimization Service</div>
+            <div class="comp-desc">Pareto ABC classification, golden zone ergonomics, and affinity clustering.</div>
+          </div>
+          <div class="comp-box" id="comp-s08">
+            <div class="comp-title">08 - Congestion Prediction Service</div>
+            <div class="comp-desc">Predictive 2-hour bottleneck forecasting across zones, dock doors, and packing lines.</div>
+          </div>
+          <div class="comp-box" id="comp-s09">
+            <div class="comp-title">09 - Exception Root-Cause Engine</div>
+            <div class="comp-desc">Impact propagation tree, hypothesis scoring, and ranked corrective actions.</div>
+          </div>
+          <div class="comp-box" id="comp-s10">
+            <div class="comp-title">10 - Digital-Twin Simulation</div>
+            <div class="comp-desc">What-if scenario tester: Late trailers, door breakdown, and wave splitting.</div>
+          </div>
+          <div class="comp-box" id="comp-s11">
+            <div class="comp-title">11 - Document Intelligence Service</div>
+            <div class="comp-desc">Logistics regex entity parsing for BOLs, delay notes, and appointment emails.</div>
+          </div>
+          <div class="comp-box" id="comp-s12">
+            <div class="comp-title">12 - Learning Feedback Service</div>
+            <div class="comp-desc">Turnaround MAE tracking, productivity variance, and coefficient retraining.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LAYER 4 -->
+      <div class="layer-card layer-4">
+        <div class="layer-header">
+          <div class="layer-name">
+            <span>🧠 Layer 4: AI Cognitive & Interaction Layer</span>
+          </div>
+          <span class="layer-badge">10 Dify Workflows + Local Qwen 3B LLM</span>
+        </div>
+        <div class="components-grid">
+          <div class="comp-box" id="comp-d01">
+            <div class="comp-title">01 - Supervisor Assistant</div>
+            <div class="comp-desc">Natural language answers for dock congestion, labor shortage, and wave risks.</div>
+          </div>
+          <div class="comp-box" id="comp-d02">
+            <div class="comp-title">02 - Exception Summarizer</div>
+            <div class="comp-desc">Concise root-cause and financial exposure summaries for operations teams.</div>
+          </div>
+          <div class="comp-box" id="comp-d03">
+            <div class="comp-title">03 - Root-Cause Explainer</div>
+            <div class="comp-desc">Translates numerical hypothesis scores into clear operational explanations.</div>
+          </div>
+          <div class="comp-box" id="comp-d04">
+            <div class="comp-title">04 - Incident Report Generator</div>
+            <div class="comp-desc">Drafts audit-compliant facility incident reports with timelines and mitigations.</div>
+          </div>
+          <div class="comp-box" id="comp-d05">
+            <div class="comp-title">05 - Shift Planning Advisor</div>
+            <div class="comp-desc">Synthesizes workload forecasts and generates overtime/cross-training guidance.</div>
+          </div>
+          <div class="comp-box" id="comp-d06">
+            <div class="comp-title">06 - Delay Note NLP Parser</div>
+            <div class="comp-desc">Extracts delay reasons, ETAs, and carriers from unstructured driver messages.</div>
+          </div>
+          <div class="comp-box" id="comp-d07">
+            <div class="comp-title">07 - SOP Protocol Retriever</div>
+            <div class="comp-desc">Retrieves step-by-step resolution checklists and safety warnings for outages.</div>
+          </div>
+          <div class="comp-box" id="comp-d08">
+            <div class="comp-title">08 - Appointment Extractor</div>
+            <div class="comp-desc">Extracts pallet counts, reefer requirements, and time slots from emails.</div>
+          </div>
+          <div class="comp-box" id="comp-d09">
+            <div class="comp-title">09 - Carrier Communication</div>
+            <div class="comp-desc">Drafts professional appointment confirmations and reschedule notifications.</div>
+          </div>
+          <div class="comp-box" id="comp-d10">
+            <div class="comp-title">10 - Operational Q&A over WMS</div>
+            <div class="comp-desc">Direct natural language data exploration over warehouse productivity metrics.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LAYER 5 -->
+      <div class="layer-card layer-5">
+        <div class="layer-header">
+          <div class="layer-name">
+            <span>🖥️ Layer 5: Operational Control Tower</span>
+          </div>
+          <span class="layer-badge">Live Operational Visualizer</span>
+        </div>
+        <div class="components-grid">
+          <div class="comp-box" id="comp-ui-dock">
+            <div class="comp-title">Dock Schedule Board</div>
+            <div class="comp-desc">Live status of 24 doors, estimated turnaround gauges, and detention countdowns.</div>
+          </div>
+          <div class="comp-box" id="comp-ui-yard">
+            <div class="comp-title">Interactive Yard Map</div>
+            <div class="comp-desc">Real-time spot occupancy across 80 spots, shore power plugs, and hostler routes.</div>
+          </div>
+          <div class="comp-box" id="comp-ui-wave">
+            <div class="comp-title">Wave Release Console</div>
+            <div class="comp-desc">Picking method indicators, picker counts, and carrier cut-off SLA alerts.</div>
+          </div>
+          <div class="comp-box" id="comp-ui-labor">
+            <div class="comp-title">Labor Heatmap Console</div>
+            <div class="comp-desc">Zone productivity rates, fatigue threshold monitors, and overtime routing.</div>
+          </div>
+          <div class="comp-box" id="comp-ui-exc">
+            <div class="comp-title">AI Exception Queue</div>
+            <div class="comp-desc">Downstream impact propagation trees and one-click ranked corrective actions.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <footer>
+      Autonomous Warehouse, Yard, Dock, and Labor Optimization with AI Exception Management Engine • Self-Hosted n8n + Dify + Python
+    </footer>
+  </div>
+
+  <script>
+    const scenarios = {
+      1: {
+        title: "Active Scenario: Cold-Chain Perishable Trailer Shore Power Fluctuation",
+        highlight: ["comp-iot", "comp-wf08", "comp-wf05", "comp-s04", "comp-s09", "comp-d03", "comp-ui-yard"],
+        lines: [
+          "[16:00:01] INTAKE: IoT Temperature Sensor Pedestal Y-22 logged +3.8C rise over 30 minutes in Reefer Trailer TR-SIM-03.",
+          "[16:00:02] LAYER 2 (n8n WF-08): Threshold breached. Created Exception Ticket EXC-8821 (Severity: CRITICAL).",
+          "[16:00:03] LAYER 3 (Python Serv 9): Propagated impact -> $45,000 perishable dairy spoilage exposure within 45 mins.",
+          "[16:00:04] LAYER 3 (Python Serv 4): Yard Spot Scoring evaluated 80 spots -> Target Spot SPOT-B04 has active 480V 3-phase plug.",
+          "[16:00:05] LAYER 4 (Dify WF-03): Root-Cause Confidence 89% -> Pedestal circuit breaker trip on Row B.",
+          "[16:00:06] LAYER 2 (n8n WF-05): Dispatched urgent shunting work order to Hostler 01 ($25 cost).",
+          "[16:00:07] RESOLUTION: Trailer shunted to SPOT-B04 in 8 minutes. Temperature stabilized at +3.5C. Spoilage loss prevented: $45,000."
+        ]
+      },
+      2: {
+        title: "Active Scenario: Outbound Wave Picking Congestion & Dynamic Labor Rebalance",
+        highlight: ["comp-wms", "comp-wf06", "comp-wf07", "comp-s05", "comp-s06", "comp-s08", "comp-d05", "comp-ui-wave", "comp-ui-labor"],
+        lines: [
+          "[16:15:00] INTAKE: Wave 2 released with 85 express orders. Hourly pick volume exceeds baseline capacity.",
+          "[16:15:02] LAYER 3 (Python Serv 8): Congestion Service predicts 93.3% density in Forward Pick Ambient Zone.",
+          "[16:15:04] LAYER 3 (Python Serv 6): Labor Optimization Service evaluates shift headcount: 6 picker deficit in Zone A.",
+          "[16:15:05] LAYER 3 (Python Serv 6): Detected surplus capacity in Inbound Putaway (3 workers available).",
+          "[16:15:07] LAYER 2 (n8n WF-07): Executed dynamic labor reallocation: Moved 5 cross-trained material handlers from Putaway to Picking.",
+          "[16:15:08] LAYER 4 (Dify WF-05): Shift Advisor confirms: Cut-off miss risk drops from 58% to 5.0%.",
+          "[16:15:10] RESOLUTION: All 85 express orders picked and staged before 17:00 carrier cut-off. Zero SLA miss penalty ($350/order saved)."
+        ]
+      },
+      3: {
+        title: "Active Scenario: Dock Door Hydraulic Leveler Breakdown & Dynamic Divert",
+        highlight: ["comp-iot", "comp-wf04", "comp-wf08", "comp-s01", "comp-s03", "comp-s09", "comp-d07", "comp-ui-dock"],
+        lines: [
+          "[16:30:00] TELEMETRY: Door DOCK-08 hydraulic leveler safety sensor tripped during trailer uncoupling.",
+          "[16:30:02] LAYER 2 (n8n WF-08): Created Exception Record EXC-8821 (Category: DOCK, Severity: HIGH).",
+          "[16:30:04] LAYER 3 (Python Serv 9): Root-Cause Engine isolates solenoid pressure fault (Confidence: 95%).",
+          "[16:30:05] LAYER 3 (Python Serv 3): Dock Scheduling Service re-routes incoming Trailer TR-908 to Flex Door DOCK-14.",
+          "[16:30:06] LAYER 4 (Dify WF-07): SOP Engine outputs SOP-DC-04 lockout protocol and technician dispatch checklist.",
+          "[16:30:08] LAYER 2 (n8n WF-04): Driver Swift notified via mobile gate app. Trailer spotted at Door D-14 within 5 minutes.",
+          "[16:30:10] RESOLUTION: Zero carrier detention charges ($75/hr averted). Door D-08 locked out for technician maintenance."
+        ]
+      },
+      4: {
+        title: "Active Scenario: Digital-Twin Simulation: Carrier 2.5h Interstate Delay ($1,192 Averted)",
+        highlight: ["comp-tms", "comp-wf02", "comp-s10", "comp-s11", "comp-d06", "comp-d09", "comp-ui-dock"],
+        lines: [
+          "[16:45:00] INTAKE: Carrier Swift dispatch email parsed: Trailer TR-9942 delayed 2.5 hours on I-80 corridor due to winter storm.",
+          "[16:45:02] LAYER 3 (Python Serv 11): Document Intelligence extracted: Trailer TR-9942, ETA 16:30, Temp 4.0C (Confidence: 98%).",
+          "[16:45:04] LAYER 3 (Python Serv 10): Digital-Twin Simulation Engine evaluated what-if delay across 22 orders.",
+          "[16:45:06] SIMULATION RESULT: Live detention cost if held at gate = $187.50. Risk of cut-off miss = $1,005.00. Total exposure = $1,192.50.",
+          "[16:45:08] AUTOMATED MITIGATION: Assigned drop-lot buffer SPOT-A14 upon arrival to pause live detention clock.",
+          "[16:45:10] LAYER 4 (Dify WF-09): Auto-generated professional reschedule confirmation email to carrier dispatch.",
+          "[16:45:12] RESOLUTION: Carrier accepted revised 16:45 appointment at Door DOCK-06. Net operational loss prevented: $1,192.50."
+        ]
+      }
+    };
+
+    function runScenario(scenId) {
+      document.querySelectorAll('.scenario-btn').forEach(btn => btn.classList.remove('active'));
+      const activeBtn = document.getElementById(`btn-scen-${scenId}`);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      const scen = scenarios[scenId];
+      if (!scen) return;
+
+      document.getElementById('inspector-scenario-title').innerText = scen.title;
+
+      // Remove previous highlights
+      document.querySelectorAll('.comp-box').forEach(el => el.classList.remove('highlight'));
+
+      // Highlight active components
+      scen.highlight.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('highlight');
+      });
+
+      // Stream trace lines
+      const outputEl = document.getElementById('trace-output');
+      outputEl.innerHTML = '';
+      scen.lines.forEach((line, idx) => {
+        let lineClass = 'trace-line-highlight';
+        if (line.includes('RESOLUTION')) lineClass = 'trace-line-success';
+        if (line.includes('CRITICAL') || line.includes('exposure') || line.includes('trip')) lineClass = 'trace-line-danger';
+
+        setTimeout(() => {
+          const div = document.createElement('div');
+          div.className = lineClass;
+          div.innerHTML = line;
+          outputEl.appendChild(div);
+          outputEl.scrollTop = outputEl.scrollHeight;
+        }, idx * 120);
+      });
+    }
+
+    // Initialize Scenario 1 on load
+    window.addEventListener('load', () => {
+      runScenario(1);
+    });
+  </script>
+</body>
+</html>

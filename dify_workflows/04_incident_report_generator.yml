@@ -1,0 +1,71 @@
+app:
+  description: 'AI Structured Incident Report Generator creating compliance and audit logs for warehouse disruptions'
+  icon: 📄
+  icon_background: '#10B981'
+  mode: workflow
+  name: 04 - Incident Report Generator
+kind: app
+version: 0.1.5
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      enabled: false
+  graph:
+    edges:
+      - id: edge_start_to_llm
+        source: start_node
+        target: llm_reporter
+      - id: edge_llm_to_end
+        source: llm_reporter
+        target: end_node
+    nodes:
+      - id: start_node
+        data:
+          title: Start
+          type: start
+          variables:
+            - label: incident_data
+              max_length: 5000
+              required: true
+              type: paragraph
+              variable: incident_data
+        position:
+          x: 100
+          y: 200
+      - id: llm_reporter
+        data:
+          title: Incident Reporter
+          type: llm
+          model:
+            provider: ollama
+            name: qwen2.5:3b
+            mode: chat
+            completion_params:
+              temperature: 0.1
+          prompt_template:
+            - role: system
+              text: |
+                Generate a formal markdown warehouse operational incident report.
+                Include: Incident ID, Severity, Detected Timestamp, Location/Zone, Root Cause Analysis, Financial Exposure ($), Corrective Actions Executed, and Future Preventative Recommendations.
+            - role: user
+              text: |
+                Incident Payload:
+                {{#start_node.incident_data#}}
+          output_key: report_markdown
+        position:
+          x: 400
+          y: 200
+      - id: end_node
+        data:
+          title: End
+          type: end
+          outputs:
+            - value_selector:
+                - llm_reporter
+                - report_markdown
+              variable: report_markdown
+        position:
+          x: 700
+          y: 200

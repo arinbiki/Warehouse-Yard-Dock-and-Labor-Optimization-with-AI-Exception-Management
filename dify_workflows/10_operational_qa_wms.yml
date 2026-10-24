@@ -1,0 +1,77 @@
+app:
+  description: 'AI Operational Q&A over WMS Data answering analytical historical queries without manual reporting'
+  icon: 📊
+  icon_background: '#0284C7'
+  mode: workflow
+  name: 10 - Operational Q&A over WMS Data
+kind: app
+version: 0.1.5
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      enabled: false
+  graph:
+    edges:
+      - id: edge_start_to_llm
+        source: start_node
+        target: llm_qa
+      - id: edge_llm_to_end
+        source: llm_qa
+        target: end_node
+    nodes:
+      - id: start_node
+        data:
+          title: Start
+          type: start
+          variables:
+            - label: question
+              max_length: 500
+              required: true
+              type: text-input
+              variable: question
+            - label: metrics_summary
+              max_length: 5000
+              required: true
+              type: paragraph
+              variable: metrics_summary
+        position:
+          x: 100
+          y: 200
+      - id: llm_qa
+        data:
+          title: WMS Analytics Engine
+          type: llm
+          model:
+            provider: ollama
+            name: qwen2.5:3b
+            mode: chat
+            completion_params:
+              temperature: 0.1
+          prompt_template:
+            - role: system
+              text: |
+                You are a Logistics Data Scientist & Warehouse Operations Analyst.
+                Answer the user's question accurately using the provided WMS metrics and KPIs.
+                Cite specific doors, zones, turnaround times, and percentage variances.
+            - role: user
+              text: |
+                Question: {{#start_node.question#}}
+                Metrics Summary: {{#start_node.metrics_summary#}}
+          output_key: answer
+        position:
+          x: 400
+          y: 200
+      - id: end_node
+        data:
+          title: End
+          type: end
+          outputs:
+            - value_selector:
+                - llm_qa
+                - answer
+              variable: answer
+        position:
+          x: 700
+          y: 200

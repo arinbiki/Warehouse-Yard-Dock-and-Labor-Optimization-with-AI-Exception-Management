@@ -1,0 +1,74 @@
+app:
+  description: 'AI Standard Operating Procedure (SOP) Retrieval and Step-by-Step Resolution Guidance'
+  icon: 📖
+  icon_background: '#065F46'
+  mode: workflow
+  name: 07 - SOP Retrieval and Resolution Guidance
+kind: app
+version: 0.1.5
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      enabled: false
+  graph:
+    edges:
+      - id: edge_start_to_llm
+        source: start_node
+        target: llm_sop
+      - id: edge_llm_to_end
+        source: llm_sop
+        target: end_node
+    nodes:
+      - id: start_node
+        data:
+          title: Start
+          type: start
+          variables:
+            - label: sop_topic
+              max_length: 500
+              required: true
+              type: text-input
+              variable: sop_topic
+        position:
+          x: 100
+          y: 200
+      - id: llm_sop
+        data:
+          title: SOP Resolution Guide
+          type: llm
+          model:
+            provider: ollama
+            name: qwen2.5:3b
+            mode: chat
+            completion_params:
+              temperature: 0.1
+          prompt_template:
+            - role: system
+              text: |
+                You are the Facility Safety & Quality Compliance Officer.
+                Provide exact SOP protocol for the specified topic:
+                - SOP Code & Title
+                - Immediate Action Checklist (numbered)
+                - Safety & Environmental Warnings
+                - Approvals & Escalation Matrix
+            - role: user
+              text: |
+                Topic / Incident Type: {{#start_node.sop_topic#}}
+          output_key: sop_guidance
+        position:
+          x: 400
+          y: 200
+      - id: end_node
+        data:
+          title: End
+          type: end
+          outputs:
+            - value_selector:
+                - llm_sop
+                - sop_guidance
+              variable: sop_guidance
+        position:
+          x: 700
+          y: 200

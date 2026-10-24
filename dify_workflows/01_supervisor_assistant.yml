@@ -1,0 +1,77 @@
+app:
+  description: 'AI-powered Warehouse Supervisor Copilot for real-time operational queries, dock congestion, and labor bottlenecks'
+  icon: 🤖
+  icon_background: '#1E293B'
+  mode: workflow
+  name: 01 - Warehouse Supervisor Assistant
+kind: app
+version: 0.1.5
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      enabled: false
+  graph:
+    edges:
+      - id: edge_start_to_llm
+        source: start_node
+        target: llm_supervisor
+      - id: edge_llm_to_end
+        source: llm_supervisor
+        target: end_node
+    nodes:
+      - id: start_node
+        data:
+          title: Start
+          type: start
+          variables:
+            - label: query
+              max_length: 500
+              required: true
+              type: text-input
+              variable: query
+            - label: warehouse_context
+              max_length: 4000
+              required: false
+              type: paragraph
+              variable: warehouse_context
+        position:
+          x: 100
+          y: 200
+      - id: llm_supervisor
+        data:
+          title: Qwen / LLM Supervisor Assistant
+          type: llm
+          model:
+            provider: ollama
+            name: qwen2.5:3b
+            mode: chat
+            completion_params:
+              temperature: 0.2
+          prompt_template:
+            - role: system
+              text: |
+                You are an expert AI Warehouse Operations Copilot.
+                Analyze the supervisor's query using real-time warehouse context (dock status, yard occupancy, wave progress, labor headcount).
+                Give direct, actionable recommendations with quantitative justifications.
+            - role: user
+              text: |
+                Supervisor Question: {{#start_node.query#}}
+                Warehouse Context: {{#start_node.warehouse_context#}}
+          output_key: answer
+        position:
+          x: 400
+          y: 200
+      - id: end_node
+        data:
+          title: End
+          type: end
+          outputs:
+            - value_selector:
+                - llm_supervisor
+                - answer
+              variable: answer
+        position:
+          x: 700
+          y: 200

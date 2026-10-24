@@ -1,0 +1,77 @@
+app:
+  description: 'AI Delay Note Parsing workflow extracting structured disruption metadata from driver emails, SMS, and notes'
+  icon: ⏱️
+  icon_background: '#F59E0B'
+  mode: workflow
+  name: 06 - Delay Note Parsing
+kind: app
+version: 0.1.5
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      enabled: false
+  graph:
+    edges:
+      - id: edge_start_to_llm
+        source: start_node
+        target: llm_parser
+      - id: edge_llm_to_end
+        source: llm_parser
+        target: end_node
+    nodes:
+      - id: start_node
+        data:
+          title: Start
+          type: start
+          variables:
+            - label: raw_note
+              max_length: 3000
+              required: true
+              type: paragraph
+              variable: raw_note
+        position:
+          x: 100
+          y: 200
+      - id: llm_parser
+        data:
+          title: Delay Note Entity Parser
+          type: llm
+          model:
+            provider: ollama
+            name: qwen2.5:3b
+            mode: chat
+            completion_params:
+              temperature: 0.0
+          prompt_template:
+            - role: system
+              text: |
+                Extract JSON containing:
+                - delay_category: (TRAFFIC, MECHANICAL, WEATHER, WAREHOUSE_HOLD, DETENTION_WARNING)
+                - trailer_id: (extracted string or null)
+                - carrier_name: (extracted string or null)
+                - delay_minutes_estimated: (integer)
+                - reported_reason: (concise string)
+                - confidence_score: (0.0 to 1.0)
+                Return strictly JSON.
+            - role: user
+              text: |
+                Raw Note / Email:
+                {{#start_node.raw_note#}}
+          output_key: parsed_json
+        position:
+          x: 400
+          y: 200
+      - id: end_node
+        data:
+          title: End
+          type: end
+          outputs:
+            - value_selector:
+                - llm_parser
+                - parsed_json
+              variable: parsed_json
+        position:
+          x: 700
+          y: 200

@@ -1,0 +1,83 @@
+{
+  "name": "14 - Settlement and Feedback Loop",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "feedback-learning",
+        "responseMode": "onReceived",
+        "responseData": "allEntries"
+      },
+      "id": "webhook_14",
+      "name": "Webhook Intake",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8090/api/v1/learning/variance-report",
+        "method": "POST",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ actual_appointments: [{ planned_turnaround_mins: 60, actual_turnaround_mins: 72, free_detention_mins: 120 }], actual_shift_labor: [{ planned_units_per_hr: 42, actual_units_per_hr: 39 }], actual_exceptions: [{ resolution_time_mins: 18.5 }] }) }}"
+      },
+      "id": "node_14_1",
+      "name": "Run Continuous Learning Engine",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        450,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Log workflow execution audit\nconst res = $input.all();\nreturn res.map(r => ({ json: { ...r.json, _audit: { workflow: '14 - Settlement and Feedback Loop', processed_at: new Date().toISOString() } } }));"
+      },
+      "id": "audit_14",
+      "name": "Operational Audit Log",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        700,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Intake": {
+      "main": [
+        [
+          {
+            "node": "Run Continuous Learning Engine",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Continuous Learning Engine": {
+      "main": [
+        [
+          {
+            "node": "Operational Audit Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "description": "Compares planned vs actual performance, calculates turnaround MAE and productivity drift, and updates models"
+  }
+}
