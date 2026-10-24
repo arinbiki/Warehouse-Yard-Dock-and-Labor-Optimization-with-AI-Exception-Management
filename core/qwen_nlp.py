@@ -29,7 +29,7 @@ class QwenLocalNLP:
             }
         }
         try:
-            async with httpx.AsyncClient(timeout=8.0) as client:
+            async with httpx.AsyncClient(timeout=2.0) as client:
                 res = await client.post(f"{self.base_url}/api/generate", json=payload)
                 if res.status_code == 200:
                     data = res.json()

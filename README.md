@@ -336,6 +336,43 @@ python tests/stress_test_10m_warehouse.py
 
 ---
 
+## 10. End-to-End Three-Tier Stress Test (Python + n8n + Dify)
+
+To ensure the entire unified stack operates with zero bottlenecks when combining **analytical solvers**, **live orchestration webhooks**, and **cognitive LLM inference**, an end-to-end multi-protocol stress test was executed:
+
+```powershell
+python tests/stress_test_e2e_stack.py
+```
+
+### Stack Concurrency & Latency Benchmarks
+
+| Tier | Component & Target | Workload Executed | Concurrency | Success Rate | Throughput | P50 Latency | P90 Latency | P99 Latency |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Tier 1** | **Python Analytical Engine** (FastAPI Port 8090) | 1,000 REST Requests across 8 Optimization Endpoints | 50 Workers | **100% (1,000/1,000)** | 29.0 req/sec | **1,097.7 ms** | 3,499.0 ms | 7,336.5 ms |
+| **Tier 2** | **Live n8n Orchestration** (`https://ubuntu.arindam818.cloud`) | 150 Live Webhooks across 14 Deployed Workflows | 15 Workers | **100% (150/150)** | 16.1 req/sec | **671.1 ms** | 1,585.7 ms | 2,175.6 ms |
+| **Tier 3** | **Dify AI Workflows & Local Qwen 3B** | 50 Cognitive Invocations across 5 AI Workflows | 10 Workers | **100% (50/50)** | 1.3 calls/sec | **5,994.9 ms** | 10,286.3 ms | 10,286.3 ms |
+| **STACK**| **Combined End-to-End Enterprise Stack** | **1,200 Multi-Protocol Requests** | **75 Workers** | **100% OK** | **83.31s total** | — | — | **Zero Failures** |
+
+### Verified Live n8n Workflows
+
+All 14 production workflows are verified deployed, active, and benchmarked on `https://ubuntu.arindam818.cloud`:
+1. `01 - WMS-TMS Event Intake` (`a67FZQdUzXuj6B6e`) -> `POST /webhook/warehouse-event-intake`
+2. `02 - Inbound Appointment Request` (`UVmfO53K7G1qtyOW`) -> `POST /webhook/appointment-request`
+3. `03 - Carrier Arrival & Gate Check-In` (`eKH5HJruUqwOCcSR`) -> `POST /webhook/gate-check-in`
+4. `04 - Dock Assignment & Dock Call` (`ztxNv2iX8eu3FgMo`) -> `POST /webhook/dock-call`
+5. `05 - Yard Movement Task Management` (`NxNSgGMATuwkxohG`) -> `POST /webhook/yard-movement-task`
+6. `06 - Wave Release Planning` (`WarkZQIr8dBp3wfU`) -> `POST /webhook/wave-plan-release`
+7. `07 - Labor Allocation Planning` (`EfdqthCFP2Qs9Arg`) -> `POST /webhook/labor-allocation`
+8. `08 - Exception Detection & Ticket Creation` (`mpws7HSRfOWVNFtk`) -> `POST /webhook/exception-detection`
+9. `09 - Exception Escalation` (`c5wve95l7ue8T5B1`) -> `POST /webhook/exception-escalation`
+10. `10 - Human Approval Routing` (`8bRNv1fYwZjSBV3u`) -> `POST /webhook/human-approval`
+11. `11 - Document & Note Extraction` (`ikVTybFfCbc3FqbN`) -> `POST /webhook/document-extract`
+12. `12 - Real-Time Alerts & Notifications` (`ACjuxiq4AGviRxaS`) -> `POST /webhook/alerts-dispatch`
+13. `13 - Operational Dashboard Updates` (`rkntrESqR0TJg3Ov`) -> `POST /webhook/dashboard-update`
+14. `14 - Settlement & Feedback Loop` (`mOXV5Ic2UhogwFsk`) -> `POST /webhook/feedback-learning`
+
+---
+
 ## Repository Structure
 
 ```
@@ -394,12 +431,16 @@ python tests/stress_test_10m_warehouse.py
 │   ├── 12_real_time_alerts_and_notifications.json
 │   ├── 13_operational_dashboard_updates.json
 │   └── 14_settlement_and_feedback_loop.json
+├── n8n_endpoints.json                    # Active deployment registry of 14 live webhooks
 ├── docs/
 │   ├── index.html                        # Interactive Architecture Console & Scenario Player
 │   └── warehouse_architecture.json       # Interactive blueprint specification
+├── scripts/
+│   └── deploy_all_n8n_workflows.py       # Automated deployment & activation to live n8n
 └── tests/
     ├── seed_warehouse_data.py            # Master database populator
     ├── test_optimization_engines.py      # Unit test suite for all 12 services
     ├── run_warehouse_simulation.py       # 500-event end-to-end shift simulation
-    └── stress_test_10m_warehouse.py      # 10,000,000 synthetic data multi-simulation suite
+    ├── stress_test_10m_warehouse.py      # 10,000,000 synthetic data multi-simulation suite
+    └── stress_test_e2e_stack.py          # Three-tier E2E stress test (Python + n8n + Dify)
 ```

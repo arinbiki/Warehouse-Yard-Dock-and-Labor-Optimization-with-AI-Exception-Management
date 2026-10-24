@@ -42,7 +42,7 @@ class DifyWorkflowClient:
             "user": "warehouse-operations-agent"
         }
         try:
-            async with httpx.AsyncClient(timeout=12.0) as client:
+            async with httpx.AsyncClient(timeout=2.5) as client:
                 res = await client.post(f"{self.base_url}/v1/workflows/run", headers=headers, json=payload)
                 if res.status_code == 200:
                     data = res.json()
