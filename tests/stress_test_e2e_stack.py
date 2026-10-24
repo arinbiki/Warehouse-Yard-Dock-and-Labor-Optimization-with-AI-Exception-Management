@@ -2,7 +2,7 @@
 End-to-End Enterprise Stress Test Suite
 Simultaneously benchmarks:
 1. Python Analytical Optimization REST API (Port 8090)
-2. Live n8n Orchestration Workflows (14 Deployed Webhooks on https://ubuntu.arindam818.cloud)
+2. Live n8n Orchestration Workflows (14 Deployed Webhooks)
 3. Dify Cognitive AI Workflows & Local Ollama Qwen LLM (10 Workflows)
 """
 
@@ -28,11 +28,11 @@ sys.path.insert(0, os.path.abspath("."))
 
 load_dotenv()
 
-PYTHON_API_URL = "http://127.0.0.1:8090"
-N8N_BASE_URL = os.getenv("N8N_BASE_URL", "https://ubuntu.arindam818.cloud").rstrip("/")
-DIFY_BASE_URL = os.getenv("DIFY_BASE_URL", "http://158.69.215.232:3000").rstrip("/")
+PYTHON_API_URL = os.getenv("DECISION_ENGINE_URL", "http://127.0.0.1:8090").rstrip("/")
+N8N_BASE_URL = os.getenv("N8N_BASE_URL", "http://localhost:5678").rstrip("/")
+DIFY_BASE_URL = os.getenv("DIFY_BASE_URL", "http://localhost:3000").rstrip("/")
 DIFY_API_KEY = os.getenv("DIFY_API_KEY", "")
-OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://158.69.215.232:11434").rstrip("/")
+OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434").rstrip("/")
 
 # Load deployed n8n endpoints
 try:

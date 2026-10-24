@@ -17,11 +17,16 @@ import os
 
 sys.stdout.reconfigure(encoding="utf-8")
 
-BSK_PATH = r"C:\Users\Arindam RoY\.local\bin\bsk.exe"
+BSK_PATH = os.getenv("BSK_PATH", "bsk")
+DIFY_BASE_URL = os.getenv("DIFY_BASE_URL", "http://localhost:3000").rstrip("/")
 
 # The 10 Warehouse Apps
-with open("dify_endpoints.json", "r", encoding="utf-8") as f:
-    ALL_ENDPOINTS = json.load(f)
+endpoints_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "dify_endpoints.json")
+if os.path.exists(endpoints_path):
+    with open(endpoints_path, "r", encoding="utf-8") as f:
+        ALL_ENDPOINTS = json.load(f)
+else:
+    ALL_ENDPOINTS = {}
 
 WAREHOUSE_APPS = {
     name: data for name, data in ALL_ENDPOINTS.items()
@@ -138,7 +143,7 @@ def configure_all_apps():
     start = subprocess.check_output([BSK_PATH, "session", "start", "--browser", "2148394c", "--json"])
     sess = json.loads(start.decode())["session_id"]
     try:
-        subprocess.check_output([BSK_PATH, "navigate", "http://158.69.215.232:3000/apps", "--session", sess])
+        subprocess.check_output([BSK_PATH, "navigate", f"{DIFY_BASE_URL}/apps", "--session", sess])
         out = subprocess.check_output([BSK_PATH, "evaluate", code, "--session", sess])
         return json.loads(out.decode())
     finally:

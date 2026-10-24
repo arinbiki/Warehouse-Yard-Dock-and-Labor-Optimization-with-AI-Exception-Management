@@ -1,7 +1,7 @@
 """
 Automated Dify Workflow Deployment Script via BrowserSkill
 Deploys and publishes all 10 Dify AI Workflows from dify_workflows/
-into Dify Web Console (http://158.69.215.232:3000/apps)
+into Dify Web Console (${DIFY_BASE_URL}/apps)
 """
 
 import subprocess
@@ -13,9 +13,10 @@ import sys
 
 sys.stdout.reconfigure(encoding="utf-8")
 
-BSK_PATH = "C:\\Users\\Arindam RoY\\.local\\bin\\bsk.exe"
-SESSION_ID = "fjpy"
-DIFY_APPS_URL = "http://158.69.215.232:3000/apps"
+BSK_PATH = os.getenv("BSK_PATH", "bsk")
+SESSION_ID = os.getenv("BSK_SESSION_ID", "default")
+DIFY_BASE_URL = os.getenv("DIFY_BASE_URL", "http://localhost:3000").rstrip("/")
+DIFY_APPS_URL = f"{DIFY_BASE_URL}/apps"
 
 workflow_files = sorted(glob.glob("dify_workflows/*.yml"))
 print(f"Found {len(workflow_files)} Dify workflow files to deploy...")

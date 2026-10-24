@@ -5,6 +5,9 @@
 *.env
 dify_workflows/dify_app_keys.json
 dify_app_keys.json
+dify_endpoints.json
+n8n_endpoints.json
+plan.md
 
 # Python Virtual Environments
 venv/

@@ -5,7 +5,8 @@ import os
 
 sys.stdout.reconfigure(encoding="utf-8")
 
-BSK_PATH = "C:\\Users\\Arindam RoY\\.local\\bin\\bsk.exe"
+BSK_PATH = os.getenv("BSK_PATH", "bsk")
+DIFY_BASE_URL = os.getenv("DIFY_BASE_URL", "http://localhost:3000").rstrip("/")
 
 def run_bsk(*args):
     res = subprocess.run([BSK_PATH] + list(args), capture_output=True, text=True, check=True)
@@ -20,7 +21,7 @@ def main():
         sess_out = run_bsk("session", "list", "--json")
         sessions = json.loads(sess_out)
         for s in sessions:
-            if "158.69.215.232" in s.get("url", ""):
+            if DIFY_BASE_URL in s.get("url", ""):
                 session_id = s.get("id")
                 break
     except Exception:
@@ -43,7 +44,7 @@ def main():
         sess_info = json.loads(start_out)
         session_id = sess_info.get("session_id") or sess_info.get("id")
         created_session = True
-        run_bsk("navigate", "http://158.69.215.232:3000/apps", "--session", session_id)
+        run_bsk("navigate", f"{DIFY_BASE_URL}/apps", "--session", session_id)
 
     code = """
 (async () => {
@@ -77,7 +78,7 @@ def main():
             output_data[a.get('name')] = {
                 "id": a.get("id"),
                 "mode": a.get("mode"),
-                "console_url": f"http://158.69.215.232:3000/app/{a.get('id')}/workflow"
+                "console_url": f"{DIFY_BASE_URL}/app/{a.get('id')}/workflow"
             }
         
         json_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "dify_endpoints.json")

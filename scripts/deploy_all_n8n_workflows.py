@@ -5,7 +5,7 @@ import requests
 from dotenv import load_dotenv
 
 load_dotenv()
-n8n_url = os.getenv("N8N_BASE_URL", "https://ubuntu.arindam818.cloud")
+n8n_url = os.getenv("N8N_BASE_URL", "http://localhost:5678").rstrip("/")
 n8n_key = os.getenv("N8N_PUBLIC_API_KEY", "")
 
 headers = {
